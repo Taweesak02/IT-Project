@@ -1,0 +1,300 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  username      String?
+  password      String
+  roleId        Int
+  profileImage  String?
+  status        String    @default("active")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  role            Role      @relation(fields: [roleId], references: [id])
+  comics          Comic[]
+  coinWallet      CoinWallet?
+  payments        Payment[]
+  chapterUnlocks  ChapterUnlock[]
+  comicRatings    ComicRating[]
+  favoriteComics  FavoriteComic[]
+  followComics    FollowComic[]
+  comments        Comment[]
+  readHistory     ReadHistory[]
+  refreshTokens   RefreshToken[]
+}
+
+model Role {
+  id            Int       @id @default(autoincrement())
+  roleName      String    @unique
+
+  users  User[]
+}
+
+model Comic {
+  id            Int       @id @default(autoincrement())
+  creatorId     Int
+  title         String
+  description   String?
+  coverImage    String?
+  viewCount      Int       @default(0)
+  status        String    @default("ongoing")
+  approved      Boolean   @default(false)
+  publishedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  creator       User      @relation(fields: [creatorId], references: [id])
+  categories    ComicCategory[]
+  tags          ComicTag[]
+  chapters      Chapter[]
+  ratings       ComicRating[]
+  favorites     FavoriteComic[]
+  follows       FollowComic[]
+  unlocks       ChapterUnlock[]
+}
+
+model ComicCategory{
+  comicId       Int
+  categoryId    Int
+
+  comic         Comic     @relation(fields: [comicId], references: [id])
+  category      Category  @relation(fields: [categoryId], references: [id])
+  
+  @@id([comicId, categoryId])
+}
+
+model Category {
+  id            Int       @id @default(autoincrement())
+  name          String    @unique
+
+  comics        ComicCategory[]
+}
+
+model ComicTag{
+  comicId       Int
+  tagId         Int
+
+  comic         Comic     @relation(fields: [comicId], references: [id])
+  tag           Tag       @relation(fields: [tagId], references: [id])
+  
+  @@id([comicId, tagId])
+}
+
+model Tag {
+  id            Int       @id @default(autoincrement())
+  name          String    @unique
+
+  comics        ComicTag[]
+}
+
+model Chapter {
+  id            Int       @id @default(autoincrement())
+  comicId       Int
+  chapterNumber Int
+  title         String
+  coinCost      Int       @default(0)
+  viewCount      Int      @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  comic         Comic     @relation(fields: [comicId], references: [id], onDelete: Cascade)
+  pages         ChapterImage[]
+  unlocks       ChapterUnlock[]
+  comments      Comment[]
+  viewStatistics ViewStatistic[]
+  readHistories ReadHistory[]
+
+  @@unique([comicId, chapterNumber])
+  @@index([comicId])
+}
+
+model ChapterImage {
+  id            Int       @id @default(autoincrement())
+  chapterId     Int
+  imageUrl      String
+  pageNumber    Int      // controls reading order
+  width         Int?
+  height        Int?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  chapter       Chapter   @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  
+  @@unique([chapterId, pageNumber]) // no duplicate page numbers within a chapter
+  @@index([chapterId])
+}
+
+model CoinWallet {
+  id            Int       @id @default(autoincrement())
+  userId        Int       @unique
+  balance       Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions  CoinTransaction[]
+}
+
+model CoinTransaction {
+  id              Int       @id @default(autoincrement())
+  walletId        Int
+  coinAmount          Int
+  transactionType TransactionType
+  paymentId       Int?      @unique
+  createdAt       DateTime  @default(now())
+
+  wallet          CoinWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  payment         Payment?   @relation(fields: [paymentId], references: [id])
+  
+  @@index([walletId])
+}
+
+enum TransactionType {
+  PURCHASE
+  SPEND
+}
+
+model Payment{
+  id              Int           @id @default(autoincrement())
+  userId          Int
+  amount          Int           // in cents, to avoid float rounding issues
+  coinPackageId   Int?
+  paymentMethod   String        // e.g. "stripe", "paypal", "promptpay"
+  paymentStatus   PaymentStatus @default(PENDING)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id])
+  coinTransaction CoinTransaction?
+  coinPackage   CoinPackage? @relation(fields: [coinPackageId], references: [id])
+  
+  @@index([userId])
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model CoinPackage {
+  id          Int       @id @default(autoincrement())
+  name        String    // e.g. "Starter Pack"
+  coinAmount  Int       // coins granted
+  price       Int       // in smallest currency unit
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  payments    Payment[]
+}
+
+model ChapterUnlock{
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  comicId       Int
+  chapterId     Int
+  unlockedAt    DateTime  @default(now())
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comic         Comic     @relation(fields: [comicId], references: [id], onDelete: Cascade)
+  chapter       Chapter     @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, comicId,chapterId])
+}
+
+model ComicRating{
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  comicId       Int
+  rating        Int       // e.g. 1-5 stars
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comic         Comic     @relation(fields: [comicId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, comicId])
+}
+
+model FavoriteComic{
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  comicId       Int
+  createdAt     DateTime  @default(now())
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comic         Comic     @relation(fields: [comicId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, comicId])
+}
+
+model FollowComic{
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  comicId       Int
+  createdAt     DateTime  @default(now())
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comic         Comic     @relation(fields: [comicId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, comicId])
+}
+
+model Comment {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  chapterId     Int
+  content       String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapter       Chapter   @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  
+}
+
+model ReadHistory{
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  chapterId     Int
+  lastReadAt    DateTime  @default(now())
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapter       Chapter   @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId,chapterId])
+  @@index([userId, lastReadAt])
+}
+
+model ViewStatistic {
+  id            Int       @id @default(autoincrement())
+  chapterId     Int
+  viewDate      DateTime  @db.Date
+  viewsCount    Int       @default(0)
+
+  chapter       Chapter   @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@unique([chapterId, viewDate])
+  @@index([viewDate])
+}
+
+model RefreshToken {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  token       String    @unique
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  revoked     Boolean   @default(false)   // ← this IS the blacklist mechanism
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+}
