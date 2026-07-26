@@ -4,6 +4,7 @@ const sanitizeUser = (user) => ({
   username: user.username,
   roleId: user.roleId,
   roleName: user.role?.roleName || user.roleName || null,
+  emailVerified: user.emailVerified,
   profileImage: user.profileImage,
   status: user.status,
   createdAt: user.createdAt,

@@ -11,6 +11,11 @@ model User {
   email         String    @unique
   username      String?
   password      String
+  emailVerified Boolean   @default(false)
+  emailVerificationToken String?   @unique
+  emailVerificationExpiresAt DateTime?
+  passwordResetToken String? @unique
+  passwordResetExpiresAt DateTime?
   roleId        Int
   profileImage  String?
   status        String    @default("active")

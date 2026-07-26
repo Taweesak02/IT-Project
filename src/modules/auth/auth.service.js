@@ -3,8 +3,57 @@ const bcrypt = require('bcrypt');
 const prisma = require('../../configs/db');
 const { generateToken } = require('../../utils/jwt');
 const AppError = require('../../utils/AppError');
-const { refreshTokenExpiresInMinutes } = require('../../configs/env');
+const {
+  refreshTokenExpiresInMinutes,
+  verificationTokenExpiresInMinutes,
+  passwordResetTokenExpiresInMinutes,
+  nodeEnv,
+} = require('../../configs/env');
 const { sanitizeUser } = require('./auth.model');
+
+const requireActiveUser = (user) => {
+  if (!user) {
+    throw new AppError('User not found', 404);
+  }
+
+  if (user.status !== 'active') {
+    throw new AppError('Account is inactive', 403);
+  }
+
+  return user;
+};
+
+const createEmailVerificationToken = async (userId) => {
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+  const expiresAt = new Date(Date.now() + verificationTokenExpiresInMinutes * 60 * 1000);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      emailVerificationToken: hashedToken,
+      emailVerificationExpiresAt: expiresAt,
+    },
+  });
+
+  return rawToken;
+};
+
+const createPasswordResetToken = async (userId) => {
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+  const expiresAt = new Date(Date.now() + passwordResetTokenExpiresInMinutes * 60 * 1000);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      passwordResetToken: hashedToken,
+      passwordResetExpiresAt: expiresAt,
+    },
+  });
+
+  return rawToken;
+};
 
 const createSessionTokens = async (user) => {
   const accessToken = generateToken({ sub: user.id, email: user.email, role: user.role?.roleName || user.roleName || 'user' });
@@ -59,13 +108,23 @@ const registerUser = async ({ email, username, password }) => {
     include: { role: true },
   });
 
+  const verificationToken = await createEmailVerificationToken(createdUser.id);
+
   const { accessToken, refreshToken } = await createSessionTokens(createdUser);
 
-  return {
+  const response = {
     user: sanitizeUser(createdUser),
     accessToken,
     refreshToken,
+    message: 'Registration successful. Please verify your email.',
   };
+
+  if (nodeEnv !== 'production') {
+    // Temporary response value for local/dev use until SMTP delivery is added.
+    response.verificationToken = verificationToken;
+  }
+
+  return response;
 };
 
 const loginUser = async ({ email, password }) => {
@@ -82,6 +141,8 @@ const loginUser = async ({ email, password }) => {
   if (!user) {
     throw new AppError('Invalid credentials', 401);
   }
+
+  requireActiveUser(user);
 
   const isValidPassword = await bcrypt.compare(String(password), user.password);
   if (!isValidPassword) {
@@ -110,6 +171,8 @@ const refreshUserSession = async (refreshTokenValue) => {
   if (!tokenRecord || tokenRecord.revoked || tokenRecord.expiresAt < new Date()) {
     throw new AppError('Invalid or expired refresh token', 401);
   }
+
+  requireActiveUser(tokenRecord.user);
 
   await prisma.refreshToken.update({
     where: { id: tokenRecord.id },
@@ -145,17 +208,336 @@ const logoutUser = async (userId, refreshTokenValue) => {
   return { message: 'Logged out successfully' };
 };
 
+const logoutFromAllDevices = async (userId) => {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  requireActiveUser(user);
+
+  await prisma.refreshToken.updateMany({
+    where: { userId },
+    data: { revoked: true },
+  });
+
+  return { message: 'Logged out from all devices successfully' };
+};
+
+const requestPasswordReset = async (email) => {
+  if (!email) {
+    throw new AppError('Email is required', 400);
+  }
+
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+
+  if (!user) {
+    return { message: 'If an account exists, a password reset email was sent.' };
+  }
+
+  const resetToken = await createPasswordResetToken(user.id);
+  const response = { message: 'Password reset token generated successfully.' };
+
+  if (nodeEnv !== 'production') {
+    response.resetToken = resetToken;
+  }
+
+  return response;
+};
+
+const resetPassword = async (token, newPassword) => {
+  if (!token || !newPassword) {
+    throw new AppError('Reset token and new password are required', 400);
+  }
+
+  if (String(newPassword).length < 6) {
+    throw new AppError('Password must be at least 6 characters long', 400);
+  }
+
+  const hashedToken = crypto.createHash('sha256').update(String(token)).digest('hex');
+
+  const user = await prisma.user.findFirst({
+    where: {
+      passwordResetToken: hashedToken,
+      passwordResetExpiresAt: { gt: new Date() },
+    },
+  });
+
+  if (!user) {
+    throw new AppError('Invalid or expired reset token', 400);
+  }
+
+  const hashedPassword = await bcrypt.hash(String(newPassword), 10);
+
+  const updatedUser = await prisma.$transaction(async (tx) => {
+    await tx.refreshToken.updateMany({
+      where: { userId: user.id },
+      data: { revoked: true },
+    });
+
+    return tx.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        passwordResetToken: null,
+        passwordResetExpiresAt: null,
+      },
+      include: { role: true },
+    });
+  });
+
+  return {
+    message: 'Password reset successfully',
+    user: sanitizeUser(updatedUser),
+  };
+};
+
+const changePassword = async (userId, currentPassword, newPassword) => {
+  if (!currentPassword || !newPassword) {
+    throw new AppError('Current password and new password are required', 400);
+  }
+
+  if (String(newPassword).length < 6) {
+    throw new AppError('Password must be at least 6 characters long', 400);
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  requireActiveUser(user);
+
+  const isValidPassword = await bcrypt.compare(String(currentPassword), user.password);
+  if (!isValidPassword) {
+    throw new AppError('Current password is incorrect', 401);
+  }
+
+  const hashedPassword = await bcrypt.hash(String(newPassword), 10);
+
+  const updatedUser = await prisma.$transaction(async (tx) => {
+    await tx.refreshToken.updateMany({
+      where: { userId },
+      data: { revoked: true },
+    });
+
+    return tx.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedPassword,
+        passwordResetToken: null,
+        passwordResetExpiresAt: null,
+      },
+      include: { role: true },
+    });
+  });
+
+  return {
+    message: 'Password changed successfully',
+    user: sanitizeUser(updatedUser),
+  };
+};
+
+const updateProfile = async (userId, updates) => {
+  const currentUser = await prisma.user.findUnique({ where: { id: userId } });
+  requireActiveUser(currentUser);
+
+  const allowedUpdates = {};
+
+  if (updates?.username !== undefined) {
+    allowedUpdates.username = String(updates.username).trim() || null;
+  }
+
+  if (updates?.profileImage !== undefined) {
+    allowedUpdates.profileImage = String(updates.profileImage).trim() || null;
+  }
+
+  if (updates?.email !== undefined) {
+    const normalizedEmail = String(updates.email).trim().toLowerCase();
+
+    if (!normalizedEmail.includes('@')) {
+      throw new AppError('A valid email is required', 400);
+    }
+
+    const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    if (existingUser && existingUser.id !== userId) {
+      throw new AppError('Email already taken', 409);
+    }
+
+    allowedUpdates.email = normalizedEmail;
+    allowedUpdates.emailVerified = false;
+    allowedUpdates.emailVerificationToken = null;
+    allowedUpdates.emailVerificationExpiresAt = null;
+  }
+
+  if (Object.keys(allowedUpdates).length === 0) {
+    throw new AppError('At least one profile field is required', 400);
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: allowedUpdates,
+    include: { role: true },
+  });
+
+  return {
+    message: 'Profile updated successfully',
+    user: sanitizeUser(updatedUser),
+  };
+};
+
+const updateEmail = async (userId, currentPassword, newEmail) => {
+  if (!currentPassword || !newEmail) {
+    throw new AppError('Current password and new email are required', 400);
+  }
+
+  const currentUser = await prisma.user.findUnique({ where: { id: userId }, include: { role: true } });
+  requireActiveUser(currentUser);
+
+  const isValidPassword = await bcrypt.compare(String(currentPassword), currentUser.password);
+  if (!isValidPassword) {
+    throw new AppError('Current password is incorrect', 401);
+  }
+
+  const normalizedEmail = String(newEmail).trim().toLowerCase();
+  if (!normalizedEmail.includes('@')) {
+    throw new AppError('A valid email is required', 400);
+  }
+
+  const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+  if (existingUser && existingUser.id !== userId) {
+    throw new AppError('Email already taken', 409);
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      email: normalizedEmail,
+      emailVerified: false,
+      emailVerificationToken: null,
+      emailVerificationExpiresAt: null,
+    },
+    include: { role: true },
+  });
+
+  const verificationToken = await createEmailVerificationToken(userId);
+  const response = {
+    message: 'Email updated successfully. Please verify your new email.',
+    user: sanitizeUser(updatedUser),
+  };
+
+  if (nodeEnv !== 'production') {
+    response.verificationToken = verificationToken;
+  }
+
+  return response;
+};
+
+const deleteAccount = async (userId, currentPassword) => {
+  if (!currentPassword) {
+    throw new AppError('Current password is required', 400);
+  }
+
+  const currentUser = await prisma.user.findUnique({ where: { id: userId }, include: { role: true } });
+  requireActiveUser(currentUser);
+
+  const isValidPassword = await bcrypt.compare(String(currentPassword), currentUser.password);
+  if (!isValidPassword) {
+    throw new AppError('Current password is incorrect', 401);
+  }
+
+  const placeholderEmail = `deleted-${userId}-${Date.now()}@deleted.local`;
+  const revokedPassword = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
+
+  await prisma.$transaction(async (tx) => {
+    await tx.refreshToken.updateMany({
+      where: { userId },
+      data: { revoked: true },
+    });
+
+    await tx.user.update({
+      where: { id: userId },
+      data: {
+        email: placeholderEmail,
+        username: null,
+        password: revokedPassword,
+        emailVerified: false,
+        emailVerificationToken: null,
+        emailVerificationExpiresAt: null,
+        passwordResetToken: null,
+        passwordResetExpiresAt: null,
+        profileImage: null,
+        status: 'deleted',
+      },
+    });
+  });
+
+  return { message: 'Account deleted successfully' };
+};
+
 const getCurrentUser = async (userId) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: { role: true },
   });
 
-  if (!user) {
-    throw new AppError('User not found', 404);
-  }
+  requireActiveUser(user);
 
   return { user: sanitizeUser(user) };
+};
+
+const verifyUserEmail = async (token) => {
+  if (!token) {
+    throw new AppError('Verification token is required', 400);
+  }
+
+  const hashedToken = crypto.createHash('sha256').update(String(token)).digest('hex');
+
+  const user = await prisma.user.findFirst({
+    where: {
+      emailVerificationToken: hashedToken,
+      emailVerificationExpiresAt: { gt: new Date() },
+    },
+    include: { role: true },
+  });
+
+  if (!user) {
+    throw new AppError('Invalid or expired verification token', 400);
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      emailVerified: true,
+      emailVerificationToken: null,
+      emailVerificationExpiresAt: null,
+    },
+    include: { role: true },
+  });
+
+  return {
+    message: 'Email verified successfully',
+    user: sanitizeUser(updatedUser),
+  };
+};
+
+const resendVerificationEmail = async (email) => {
+  if (!email) {
+    throw new AppError('Email is required', 400);
+  }
+
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+
+  if (!user) {
+    return { message: 'If an account exists, a verification email was re-sent.' };
+  }
+
+  if (user.emailVerified) {
+    return { message: 'Email is already verified.' };
+  }
+
+  const verificationToken = await createEmailVerificationToken(user.id);
+  const response = { message: 'Verification email re-sent successfully.' };
+
+  if (nodeEnv !== 'production') {
+    response.verificationToken = verificationToken;
+  }
+
+  return response;
 };
 
 module.exports = {
@@ -163,5 +545,14 @@ module.exports = {
   loginUser,
   refreshUserSession,
   logoutUser,
+  logoutFromAllDevices,
   getCurrentUser,
+  requestPasswordReset,
+  resetPassword,
+  changePassword,
+  updateProfile,
+  updateEmail,
+  deleteAccount,
+  verifyUserEmail,
+  resendVerificationEmail,
 };
