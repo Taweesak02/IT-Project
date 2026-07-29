@@ -15,132 +15,78 @@ const {
   resendVerificationEmail,
 } = require('./auth.service');
 
-const register = async (req, res, next) => {
-  try {
-    const result = await registerUser(req.body);
-    res.status(201).json({ success: true, ...result });
-  } catch (error) {
-    next(error);
-  }
-};
+const asyncHandler = require('../../utils/asyncHandler')
 
-const login = async (req, res, next) => {
-  try {
-    const result = await loginUser(req.body);
-    res.json({ success: true, ...result });
-  } catch (error) {
-    next(error);
-  }
-};
+const register = asyncHandler(async (req, res) => {
+  const result = await registerUser(req.body);
+  res.status(201).json({ success: true, ...result });
+});
 
-const refresh = async (req, res, next) => {
-  try {
-    const result = await refreshUserSession(req.body.refreshToken);
-    res.json({ success: true, ...result });
-  } catch (error) {
-    next(error);
-  }
-};
+const login = asyncHandler(async (req, res) => {
+  const result = await loginUser(req.body);
+  res.json({ success: true, ...result });
+});
 
-const logout = async (req, res, next) => {
-  try {
-    const result = await logoutUser(req.user.sub, req.body.refreshToken);
-    res.json({ success: true, ...result });
-  } catch (error) {
-    next(error);
-  }
-};
+const refresh = asyncHandler(async (req, res) => {
+  const result = await refreshUserSession(req.body.refreshToken);
+  res.json({ success: true, ...result });
+});
 
-const logoutAll = async (req, res, next) => {
-  try {
-    const result = await logoutFromAllDevices(req.user.sub);
-    res.json({ success: true, ...result });
-  } catch (error) {
-    next(error);
-  }
-};
+const logout = asyncHandler(async (req, res) => {
+  const result = await logoutUser(req.user.sub, req.body.refreshToken);
+  res.json({ success: true, ...result });
+});
 
-const me = async (req, res, next) => {
-  try {
-    const result = await getCurrentUser(req.user.sub);
-    res.json({ success: true, ...result });
-  } catch (error) {
-    next(error);
-  }
-};
+const logoutAll = asyncHandler(async (req, res) => {
+  const result = await logoutFromAllDevices(req.user.sub);
+  res.json({ success: true, ...result });
+});
 
-const verifyEmail = async (req, res, next) => {
-  try {
-    const token = req.body?.token || req.query?.token;
-    const result = await verifyUserEmail(token);
-    res.json({ success: true, ...result });
-  } catch (error) {
-    next(error);
-  }
-};
+const me = asyncHandler(async (req, res) => {
+  const result = await getCurrentUser(req.user.sub);
+  res.json({ success: true, ...result });
+});
 
-const resendVerification = async (req, res, next) => {
-  try {
-    const result = await resendVerificationEmail(req.body?.email);
-    res.json({ success: true, ...result });
-  } catch (error) {
-    next(error);
-  }
-};
+const verifyEmail = asyncHandler(async (req, res) => {
+  const token = req.body?.token || req.query?.token;
+  const result = await verifyUserEmail(token);
+  res.json({ success: true, ...result });
+});
 
-const forgotPassword = async (req, res, next) => {
-  try {
-    const result = await requestPasswordReset(req.body?.email);
-    res.json({ success: true, ...result });
-  } catch (error) {
-    next(error);
-  }
-};
+const resendVerification = asyncHandler(async (req, res) => {
+  const result = await resendVerificationEmail(req.body?.email);
+  res.json({ success: true, ...result });
+});
 
-const resetPasswordController = async (req, res, next) => {
-  try {
-    const result = await resetPassword(req.body?.token, req.body?.newPassword);
-    res.json({ success: true, ...result });
-  } catch (error) {
-    next(error);
-  }
-};
+const forgotPassword = asyncHandler(async (req, res) => {
+  const result = await requestPasswordReset(req.body?.email);
+  res.json({ success: true, ...result });
+});
 
-const changePasswordController = async (req, res, next) => {
-  try {
-    const result = await changePassword(req.user.sub, req.body?.currentPassword, req.body?.newPassword);
-    res.json({ success: true, ...result });
-  } catch (error) {
-    next(error);
-  }
-};
+const resetPasswordController = asyncHandler(async (req, res) => {
+  const result = await resetPassword(req.body?.token, req.body?.newPassword);
+  res.json({ success: true, ...result });
+});
 
-const updateProfileController = async (req, res, next) => {
-  try {
-    const result = await updateProfile(req.user.sub, req.body);
-    res.json({ success: true, ...result });
-  } catch (error) {
-    next(error);
-  }
-};
+const changePasswordController = asyncHandler(async (req, res) => {
+  const result = await changePassword(req.user.sub, req.body?.currentPassword, req.body?.newPassword);
+  res.json({ success: true, ...result });
+});
 
-const updateEmailController = async (req, res, next) => {
-  try {
-    const result = await updateEmail(req.user.sub, req.body?.currentPassword, req.body?.newEmail);
-    res.json({ success: true, ...result });
-  } catch (error) {
-    next(error);
-  }
-};
+const updateProfileController = asyncHandler(async (req, res) => {
+  const result = await updateProfile(req.user.sub, req.body);
+  res.json({ success: true, ...result });
+});
 
-const deleteAccountController = async (req, res, next) => {
-  try {
-    const result = await deleteAccount(req.user.sub, req.body?.currentPassword);
-    res.json({ success: true, ...result });
-  } catch (error) {
-    next(error);
-  }
-};
+const updateEmailController = asyncHandler(async (req, res) => {
+  const result = await updateEmail(req.user.sub, req.body?.currentPassword, req.body?.newEmail);
+  res.json({ success: true, ...result });
+});
+
+const deleteAccountController = asyncHandler(async (req, res) => {
+  const result = await deleteAccount(req.user.sub, req.body?.currentPassword);
+  res.json({ success: true, ...result });
+});
 
 module.exports = {
   register,
