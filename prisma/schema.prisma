@@ -48,9 +48,9 @@ model Comic {
   title         String
   description   String?
   coverImage    String?
-  viewCount      Int       @default(0)
-  status        String    @default("ongoing")
-  approved      Boolean   @default(false)
+  viewCount     Int       @default(0)
+  status        ComicStatus    @default(ONGOING)
+  approved      Boolean   @default(true)
   publishedAt   DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -63,6 +63,13 @@ model Comic {
   favorites     FavoriteComic[]
   follows       FollowComic[]
   unlocks       ChapterUnlock[]
+}
+
+enum ComicStatus {
+  ONGOING
+  COMPLETED
+  HIATUS
+  CANCELLED
 }
 
 model ComicCategory{
