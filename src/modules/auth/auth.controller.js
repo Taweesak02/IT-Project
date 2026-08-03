@@ -18,73 +18,108 @@ const {
 const asyncHandler = require('../../utils/asyncHandler')
 
 const register = asyncHandler(async (req, res) => {
-  const result = await registerUser(req.body);
+  const registerData = req.body;
+
+  const result = await registerUser(registerData);
   res.status(201).json({ success: true, ...result });
 });
 
 const login = asyncHandler(async (req, res) => {
-  const result = await loginUser(req.body);
+  const loginData = req.body;
+
+  const result = await loginUser(loginData);
   res.json({ success: true, ...result });
 });
 
 const refresh = asyncHandler(async (req, res) => {
-  const result = await refreshUserSession(req.body.refreshToken);
+  const refreshToken = req.body.refreshToken;
+  
+  const result = await refreshUserSession(refreshToken);
   res.json({ success: true, ...result });
 });
 
 const logout = asyncHandler(async (req, res) => {
-  const result = await logoutUser(req.user.sub, req.body.refreshToken);
+  const userId = req.user.sub;
+  const refreshToken = req.body.refreshToken;
+
+  const result = await logoutUser(userId, refreshToken);
   res.json({ success: true, ...result });
 });
 
 const logoutAll = asyncHandler(async (req, res) => {
-  const result = await logoutFromAllDevices(req.user.sub);
+  const userId = req.user.sub;
+
+  const result = await logoutFromAllDevices(userId);
   res.json({ success: true, ...result });
 });
 
 const me = asyncHandler(async (req, res) => {
-  const result = await getCurrentUser(req.user.sub);
+  const userId = req.user.sub;
+
+  const result = await getCurrentUser(userId);
   res.json({ success: true, ...result });
 });
 
 const verifyEmail = asyncHandler(async (req, res) => {
-  const token = req.body?.token || req.query?.token;
+  const token = req.body?.token;
+
   const result = await verifyUserEmail(token);
   res.json({ success: true, ...result });
 });
 
 const resendVerification = asyncHandler(async (req, res) => {
-  const result = await resendVerificationEmail(req.body?.email);
+  const email = req.body?.email;
+
+  const result = await resendVerificationEmail(email);
   res.json({ success: true, ...result });
 });
 
 const forgotPassword = asyncHandler(async (req, res) => {
-  const result = await requestPasswordReset(req.body?.email);
+  const email = req.body?.email;
+
+  const result = await requestPasswordReset(email);
   res.json({ success: true, ...result });
 });
 
 const resetPasswordController = asyncHandler(async (req, res) => {
-  const result = await resetPassword(req.body?.token, req.body?.newPassword);
+  const token = req.body?.token;
+  const newPassword = req.body?.newPassword;
+
+  const result = await resetPassword(token, newPassword);
   res.json({ success: true, ...result });
 });
 
 const changePasswordController = asyncHandler(async (req, res) => {
-  const result = await changePassword(req.user.sub, req.body?.currentPassword, req.body?.newPassword);
+  const userId = req.user.sub;
+  const currentPassword =  req.body?.currentPassword;
+  const newPassword = req.body?.newPassword;
+
+  const result = await changePassword(userId,currentPassword, newPassword);
   res.json({ success: true, ...result });
 });
 
 const updateProfileController = asyncHandler(async (req, res) => {
-  const result = await updateProfile(req.user.sub, req.body);
+  const userId = req.user.sub;
+  const updateData = req.body;
+
+  const result = await updateProfile(userId, updateData);
   res.json({ success: true, ...result });
 });
 
 const updateEmailController = asyncHandler(async (req, res) => {
-  const result = await updateEmail(req.user.sub, req.body?.currentPassword, req.body?.newEmail);
+  const userId = req.user.sub;
+  const currentPassword = req.body?.currentPassword;
+  const newEmail = req.body?.newEmail;
+
+  const result = await updateEmail(userId,currentPassword ,newEmail);
   res.json({ success: true, ...result });
 });
 
 const deleteAccountController = asyncHandler(async (req, res) => {
-  const result = await deleteAccount(req.user.sub, req.body?.currentPassword);
+  const userId = req.user.sub;
+  const currentPassword = req.body?.currentPassword;
+
+  const result = await deleteAccount(userId, currentPassword);
   res.json({ success: true, ...result });
 });
 

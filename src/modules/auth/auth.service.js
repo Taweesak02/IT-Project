@@ -98,14 +98,25 @@ const registerUser = async ({ email, username, password }) => {
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  const createdUser = await prisma.user.create({
-    data: {
-      email: normalizedEmail,
-      username: normalizedUsername,
-      password: hashedPassword,
-      roleId: role.id,
-    },
-    include: { role: true },
+  const createdUser = await prisma.$transaction(async (tx) => {
+    const user = await tx.user.create({
+      data: {
+        email: normalizedEmail,
+        username: normalizedUsername,
+        password: hashedPassword,
+        roleId: role.id,
+      },
+      include: { role: true },
+    });
+
+    await tx.coinWallet.create({
+      data: {
+        userId: user.id,
+        balance: 0
+      }
+    });
+
+    return user;
   });
 
   const verificationToken = await createEmailVerificationToken(createdUser.id);
