@@ -185,13 +185,15 @@ const unlockChapter = async(chapterId,userId)=>{
             throw new AppError('Not enough coins', 402);
         }
  
-        await tx.wallet.update({
+        await tx.coinWallet.update({
             where: { userId },
             data: { balance: { decrement: chapter.coinCost } }
         });
  
         const unlock = await tx.chapterUnlock.create({
-            data: { chapterId, userId }
+            data: {
+                chapterId,userId 
+            }
         });
  
         return unlock;

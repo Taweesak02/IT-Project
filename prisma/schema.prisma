@@ -62,7 +62,6 @@ model Comic {
   ratings       ComicRating[]
   favorites     FavoriteComic[]
   follows       FollowComic[]
-  unlocks       ChapterUnlock[]
 }
 
 enum ComicStatus {
@@ -212,15 +211,13 @@ model CoinPackage {
 model ChapterUnlock{
   id            Int       @id @default(autoincrement())
   userId        Int
-  comicId       Int
   chapterId     Int
   unlockedAt    DateTime  @default(now())
 
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  comic         Comic     @relation(fields: [comicId], references: [id], onDelete: Cascade)
   chapter       Chapter     @relation(fields: [chapterId], references: [id], onDelete: Cascade)
   
-  @@unique([userId, comicId,chapterId])
+  @@unique([userId,chapterId])
 }
 
 model ComicRating{
