@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const prisma = require('../../configs/db');
 const { generateToken } = require('../../utils/jwt');
+const { deleteFileByUrl } = require('../upload/upload.service');
 const AppError = require('../../utils/AppError');
 const {
   refreshTokenExpiresInMinutes,
@@ -353,25 +354,12 @@ const updateProfile = async (userId, updates) => {
   }
 
   if (updates?.profileImage !== undefined) {
-    allowedUpdates.profileImage = String(updates.profileImage).trim() || null;
-  }
-
-  if (updates?.email !== undefined) {
-    const normalizedEmail = String(updates.email).trim().toLowerCase();
-
-    if (!normalizedEmail.includes('@')) {
-      throw new AppError('A valid email is required', 400);
+    const newImage = String(updates.profileImage).trim() || null;
+    // delete old file if it's actually being replaced with something different
+    if (currentUser.profileImage && currentUser.profileImage !== newImage) {
+      await deleteFileByUrl(currentUser.profileImage);
     }
-
-    const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
-    if (existingUser && existingUser.id !== userId) {
-      throw new AppError('Email already taken', 409);
-    }
-
-    allowedUpdates.email = normalizedEmail;
-    allowedUpdates.emailVerified = false;
-    allowedUpdates.emailVerificationToken = null;
-    allowedUpdates.emailVerificationExpiresAt = null;
+    allowedUpdates.profileImage = newImage;
   }
 
   if (Object.keys(allowedUpdates).length === 0) {
@@ -475,6 +463,10 @@ const deleteAccount = async (userId, currentPassword) => {
       },
     });
   });
+
+  if (currentUser.profileImage) {
+    await deleteFileByUrl(currentUser.profileImage);
+  }
 
   return { message: 'Account deleted successfully' };
 };

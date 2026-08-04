@@ -1,4 +1,5 @@
 const prisma = require('../../configs/db');
+const { deleteFileByUrl } = require('../upload/upload.service');
 const AppError = require('../../utils/AppError');
 
 const addComic = async (creatorId,{ title, description, coverImage, categoryIds, tagIds })=>{
@@ -38,6 +39,10 @@ const editComic = async(comicId,userId,role,{ title, description, coverImage, st
         throw new AppError('You do not have permission to edit this comic',403);
     }
 
+    if (coverImage && comic.coverImage && coverImage !== comic.coverImage) {
+        await deleteFileByUrl(comic.coverImage);
+    }
+
     const updateData = { title, description, coverImage, status };
 
     // only touch categories/tags if the client actually sent them
@@ -67,7 +72,10 @@ const editComic = async(comicId,userId,role,{ title, description, coverImage, st
 }
 
 const removeComic = async(comicId, userId, role)=>{
-    const comic = await prisma.comic.findUnique({ where: { id: comicId } });
+    const comic = await prisma.comic.findUnique({
+        where: { id: comicId },
+        include: { chapters: { include: { pages: true } } }
+    });
 
     if (!comic) {
         throw new AppError('Comic not found',404);
@@ -78,6 +86,16 @@ const removeComic = async(comicId, userId, role)=>{
     }
 
     await prisma.comic.delete({ where: { id: comicId } });
+
+    if (comic.coverImage){
+        await deleteFileByUrl(comic.coverImage);
+    }
+    
+    for (const chapter of comic.chapters) {
+        for (const page of chapter.pages) {
+            await deleteFileByUrl(page.imageUrl);   // adjust field name to match your ChapterImage model
+        }
+    }
 
     return { message: 'Comic deleted successfully' };
 }

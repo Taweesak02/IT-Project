@@ -1,5 +1,6 @@
 const AppError = require('../../utils/AppError')
 const prisma = require('../../configs/db');
+const { deleteFileByUrl } = require('../upload/upload.service');
 const {formatChapterContent} = require('./chapter.model')
 
 const getChaptersByComicId = async(comicId)=>{
@@ -140,7 +141,10 @@ const editChapter = async(chapterId,userId,userRole,{chapterNumber,title,coinCos
 const removeChapter = async(chapterId,userId,userRole)=>{
     const chapter = await prisma.chapter.findUnique({
         where: { id: chapterId },
-        include: { comic: { select: { creatorId: true } } }
+        include: {
+            comic: { select: { creatorId: true } },
+            pages:true
+        }
     });
  
     if (!chapter) {
@@ -152,6 +156,11 @@ const removeChapter = async(chapterId,userId,userRole)=>{
     }
  
     await prisma.chapter.delete({ where: { id: chapterId } });
+
+    for (const page of chapter.pages) {
+        await deleteFileByUrl(page.imageUrl);   // adjust field name to match your ChapterImage model
+    }
+
     return { message: 'Chapter deleted successfully' };
 }
 
