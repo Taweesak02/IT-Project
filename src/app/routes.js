@@ -4,6 +4,7 @@ const comicsRoutes = require('../modules/comicManagement/comicManagement.route')
 const chapterRoutes = require('../modules/chapter/chapter.route')
 const tagRoutes = require('../modules/tag/tag.route')
 const categoryRoutes = require('../modules/category/category.route')
+const uploadRoutes = require('../modules/upload/upload.route')
 
 const router = express.Router();
 
@@ -17,5 +18,6 @@ router.use('/comicmanage', comicsRoutes);
 router.use('/chapter',chapterRoutes);
 router.use('/tag',tagRoutes);
 router.use('/category',categoryRoutes);
+router.use('/upload',uploadRoutes);
 
 module.exports = router;
