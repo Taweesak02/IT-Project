@@ -48,6 +48,7 @@ model Comic {
   title         String
   description   String?
   coverImage    String?
+  chapterCount   Int       @default(0)
   viewCount     Int       @default(0)
   status        ComicStatus    @default(ONGOING)
   approved      Boolean   @default(true)

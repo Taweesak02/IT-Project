@@ -23,18 +23,23 @@ const saveAvatar = async (file) => {
 };
 
 const saveChapterPages = async (files) => {
-    if (!files || files.length === 0) {
+    const normalizedFiles = Array.isArray(files) ? files : files ? [files] : [];
+
+    if (normalizedFiles.length === 0) {
         throw new AppError('At least one page image is required', 400);
     }
+
     // preserve upload order as page order — frontend should upload in reading order
-    return files.map((file, index) => ({
+    return normalizedFiles.map((file, index) => ({
         pageNumber: index + 1,
         url: toPublicUrl(file)
     }));
 };
 
 const deleteFileByUrl = async (publicUrl) => {
-    if (!publicUrl) return;
+    if (!publicUrl){ 
+        throw new AppError('url is required', 400);
+    }
 
     const filename = path.basename(publicUrl);
     const filePath = path.join(UPLOAD_ROOT, filename);

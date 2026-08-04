@@ -29,11 +29,7 @@ const avatar = asyncHandler(async(req,res)=>{
 
 const remove = asyncHandler(async (req, res) => {
     const { url } = req.body;
- 
-    if (!url) {
-        throw new AppError('url is required', 400);
-    }
- 
+
     await deleteFileByUrl(url);
     res.status(200).json({ success: true });
 });
