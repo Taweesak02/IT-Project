@@ -93,9 +93,13 @@ const getChapterContent = async(chapterId,userId,userRole)=>{
     return formatChapterContent(chapter);
 }
 
-const addChapter = async(userId,userRole,{comicId,chapterNumber,title,coinCost})=>{
+const addChapter = async(userId,userRole,{comicId,chapterNumber,title,coinCost,pages})=>{
+    if (!pages || pages.length === 0) {
+        throw new AppError('At least one page is required', 400);
+    }
+    
     const comic = await prisma.comic.findUnique({ where: { id: comicId } });
- 
+
     if (!comic) {
         throw new AppError('Comic not found', 404);
     }
@@ -105,18 +109,26 @@ const addChapter = async(userId,userRole,{comicId,chapterNumber,title,coinCost})
     }
  
     try {
-        const createdChapter = await prisma.chapter.create({
-            data: {
-                comicId,
-                chapterNumber,
-                title,
-                coinCost: coinCost ?? 0
-            }
-        });
-        await incrementChapterCount(comicId);
-
-        return createdChapter;
-
+        const createdChapter = await prisma.$transaction(async(tx)=>{
+            const chapter = await tx.chapter.create({
+                data: {
+                    comicId,
+                    chapterNumber,
+                    title,
+                    coinCost: coinCost ?? 0,
+                    pages: {
+                        create: pages.map((url, index) => ({
+                            imageUrl: url,
+                            pageNumber: index + 1
+                        }))
+                    }
+                },
+                include: { pages: true }
+            });
+            await incrementChapterCount(comicId,tx);
+            return chapter;
+        })
+        return createdChapter
     } catch (err) {
         if (err.code === 'P2002') {
             throw new AppError('Chapter number already exists for this comic', 409);
@@ -169,12 +181,15 @@ const removeChapter = async(chapterId,userId,userRole)=>{
         throw new AppError('You do not have permission to delete this chapter', 403);
     }
  
-    await prisma.chapter.delete({ where: { id: chapterId } });
+    await prisma.$transaction(async (tx) => {
+        await tx.chapter.delete({ where: { id: chapterId } });
+        await decreaseChapterCount(chapter.comicId, tx);
+    });
 
     for (const page of chapter.pages) {
         await deleteFileByUrl(page.imageUrl);   // adjust field name to match your ChapterImage model
     }
-    await decreaseChapterCount(chapter.comicId)
+  
     return { message: 'Chapter deleted successfully' };
 }
 
@@ -223,6 +238,50 @@ const unlockChapter = async(chapterId,userId)=>{
     });
 }
 
+const replaceChapterPages = async (chapterId, userId, userRole, pages) => {
+    if (!pages || pages.length === 0) {
+        throw new AppError('At least one page is required', 400);
+    }
+
+    const chapter = await prisma.chapter.findUnique({
+        where: { id: chapterId },
+        include: {
+            comic: { select: { creatorId: true } },
+            pages: true
+        }
+    });
+
+    if (!chapter) {
+        throw new AppError('Chapter not found', 404);
+    }
+
+    if (chapter.comic.creatorId !== userId && userRole !== 'admin') {
+        throw new AppError('You do not have permission to edit this chapter', 403);
+    }
+
+    const oldPages = chapter.pages;
+
+    const updatedChapter = await prisma.chapter.update({
+        where: { id: chapterId },
+        data: {
+            pages: {
+                deleteMany: {},                                  // remove all old ChapterImage rows
+                create: pages.map((url, index) => ({
+                    imageUrl: url,
+                    pageNumber: index + 1
+                }))
+            }
+        },
+        include: { pages: true }
+    });
+
+    for (const page of oldPages) {
+        await deleteFileByUrl(page.imageUrl);   // clean up old files from disk after DB update succeeds
+    }
+
+    return updatedChapter;
+};
+
 module.exports = {
     getChaptersByComicId,
     getChapterById,
@@ -230,5 +289,6 @@ module.exports = {
     addChapter,
     editChapter,
     removeChapter,
-    unlockChapter
+    unlockChapter,
+    replaceChapterPages
 };

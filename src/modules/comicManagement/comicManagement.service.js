@@ -162,8 +162,8 @@ const getComicStatistic = async(comicId, userId, role)=>{
     return comic;
 }
 
-const incrementChapterCount = async(comicId)=>{
-    await prisma.comic.update({
+const incrementChapterCount = async(comicId,tx=prisma)=>{
+    await tx.comic.update({
         where: {id:comicId},
         data:{
             chapterCount:{
@@ -173,8 +173,8 @@ const incrementChapterCount = async(comicId)=>{
     })
 }
 
-const decreaseChapterCount = async(comicId)=>{
-    await prisma.comic.update({
+const decreaseChapterCount = async(comicId,tx=prisma)=>{
+    await tx.comic.update({
         where: {id:comicId},
         data:{
             chapterCount: {

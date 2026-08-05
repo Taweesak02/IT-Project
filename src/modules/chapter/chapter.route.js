@@ -8,7 +8,8 @@ const {
     add,
     edit,
     remove,
-    unlock
+    unlock,
+    replacePages
 } = require('./chapter.controller');
 
 const router = express.Router();
@@ -20,6 +21,7 @@ router.get('/:chapterId',getOne);
 router.get('/:chapterId/content',optionalAuth,getContent);
 router.post('/', authenticate, add);  
 router.patch('/:chapterId',authenticate,edit);
+router.put('/:chapterId/pages', authenticate, replacePages);  
 router.delete('/:chapterId',authenticate,remove);
 router.post('/:chapterId/unlock',authenticate,unlock);
 

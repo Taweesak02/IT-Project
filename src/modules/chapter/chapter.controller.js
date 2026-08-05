@@ -5,7 +5,8 @@ const {
     addChapter,
     editChapter,
     removeChapter,
-    unlockChapter
+    unlockChapter,
+    replaceChapterPages
 } = require('./chapter.service')
 
 const asyncHandler = require("../../utils/asyncHandler");
@@ -66,6 +67,16 @@ const unlock = asyncHandler(async(req,res)=>{
     const userId = Number(req.user.sub);
 
     const result = await unlockChapter(chapterId,userId);
+    res.status(201).json({success:true,...result});
+});
+
+const replacePages = asyncHandler(async(req,res)=>{
+    const chapterId = Number(req.params.chapterId);
+    const userId = Number(req.user.sub);
+    const userRole = req.user.role;
+    const pages = req.body.pages
+
+    const result = await replaceChapterPages(chapterId,userId,userRole,pages);
     res.status(200).json({success:true,...result});
 });
 
@@ -76,5 +87,6 @@ module.exports = {
     add,
     edit,
     remove,
-    unlock
+    unlock,
+    replacePages
 };
