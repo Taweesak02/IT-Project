@@ -2,6 +2,7 @@ const AppError = require('../../utils/AppError')
 const prisma = require('../../configs/db');
 const { deleteFileByUrl } = require('../upload/upload.service');
 const {formatChapterContent} = require('./chapter.model')
+const {incrementChapterCount,decreaseChapterCount} = require('../comicManagement/comicManagement.service')
 
 const getChaptersByComicId = async(comicId)=>{
     if (!comicId || Number.isNaN(comicId)) {
@@ -20,10 +21,19 @@ const getChaptersByComicId = async(comicId)=>{
         },
         orderBy: { chapterNumber: 'asc' }
     });
+    
+    if(chapters.length == 0){
+        return {message:"No chapter in this comic"}
+    }
+
     return chapters;
 }
 
 const getChapterById = async(chapterId)=>{
+    if (!chapterId || Number.isNaN(chapterId)) {
+        throw new AppError('chapterId is required', 400);
+    }
+
     const chapter = await prisma.chapter.findUnique({
         where: { id: chapterId },
         select: {
@@ -95,7 +105,7 @@ const addChapter = async(userId,userRole,{comicId,chapterNumber,title,coinCost})
     }
  
     try {
-        return await prisma.chapter.create({
+        const createdChapter = await prisma.chapter.create({
             data: {
                 comicId,
                 chapterNumber,
@@ -103,6 +113,10 @@ const addChapter = async(userId,userRole,{comicId,chapterNumber,title,coinCost})
                 coinCost: coinCost ?? 0
             }
         });
+        await incrementChapterCount(comicId);
+
+        return createdChapter;
+
     } catch (err) {
         if (err.code === 'P2002') {
             throw new AppError('Chapter number already exists for this comic', 409);
@@ -160,7 +174,7 @@ const removeChapter = async(chapterId,userId,userRole)=>{
     for (const page of chapter.pages) {
         await deleteFileByUrl(page.imageUrl);   // adjust field name to match your ChapterImage model
     }
-
+    await decreaseChapterCount(chapter.comicId)
     return { message: 'Chapter deleted successfully' };
 }
 

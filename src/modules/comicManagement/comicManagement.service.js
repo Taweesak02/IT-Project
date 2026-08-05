@@ -162,6 +162,27 @@ const getComicStatistic = async(comicId, userId, role)=>{
     return comic;
 }
 
+const incrementChapterCount = async(comicId)=>{
+    await prisma.comic.update({
+        where: {id:comicId},
+        data:{
+            chapterCount:{
+                increment: 1
+            }
+        }
+    })
+}
+
+const decreaseChapterCount = async(comicId)=>{
+    await prisma.comic.update({
+        where: {id:comicId},
+        data:{
+            chapterCount: {
+                decrement: 1 
+            }
+        }
+    })
+}
 
 module.exports = {
     addComic,
@@ -169,5 +190,7 @@ module.exports = {
     removeComic,
     getComicById,
     getComicByCreator,
-    getComicStatistic
+    getComicStatistic,
+    incrementChapterCount,
+    decreaseChapterCount
 };
