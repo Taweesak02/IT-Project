@@ -89,7 +89,18 @@ const getChapterContent = async(chapterId,userId,userRole)=>{
             throw new AppError('You have not unlocked this chapter', 403);
         }
     }
- 
+    
+    await prisma.$transaction([
+        prisma.chapter.update({
+            where: { id: chapterId },
+            data: { viewCount: { increment: 1 } }
+        }),
+        prisma.comic.update({
+            where: { id: chapter.comic.id },
+            data: { viewCount: { increment: 1 } }
+        })
+    ]);
+
     return formatChapterContent(chapter);
 }
 

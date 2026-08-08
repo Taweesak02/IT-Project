@@ -5,6 +5,7 @@ const chapterRoutes = require('../modules/chapter/chapter.route')
 const tagRoutes = require('../modules/tag/tag.route')
 const categoryRoutes = require('../modules/category/category.route')
 const uploadRoutes = require('../modules/upload/upload.route')
+const comicPublic = require('../modules/comicPublic/comicPublic.route')
 
 const router = express.Router();
 
@@ -15,6 +16,8 @@ router.get('/health', (_req, res) => {
 router.use('/auth', authRoutes);
 router.use('/comic-manage', comicsRoutes);
 router.use('/comicmanage', comicsRoutes);
+router.use('/comic-public',comicPublic)
+router.use('/comicpublic',comicPublic)
 router.use('/chapter',chapterRoutes);
 router.use('/tag',tagRoutes);
 router.use('/category',categoryRoutes);

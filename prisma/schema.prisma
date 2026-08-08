@@ -50,6 +50,8 @@ model Comic {
   coverImage    String?
   chapterCount   Int       @default(0)
   viewCount     Int       @default(0)
+  avgRating     Float  @default(0)
+  ratingCount   Int    @default(0)
   status        ComicStatus    @default(ONGOING)
   approved      Boolean   @default(true)
   publishedAt   DateTime?
