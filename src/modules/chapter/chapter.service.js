@@ -59,37 +59,34 @@ const getChapterContent = async(chapterId,userId,userRole)=>{
     const chapter = await prisma.chapter.findUnique({
         where: { id: chapterId },
         include: {
-            comic: { select: { creatorId: true } },
+            comic: { select: { id: true, creatorId: true } },
             pages: { orderBy: { pageNumber: 'asc' } }
         }
     });
- 
     if (!chapter) {
         throw new AppError('Chapter not found', 404);
     }
  
     const isFree = chapter.coinCost === 0;
  
-    if (isFree) {
-        return formatChapterContent(chapter);
-    }
- 
-    if (!userId) {
-        throw new AppError('Please log in to view this chapter', 401);
-    }
- 
-    const isOwner = chapter.comic.creatorId === userId || userRole === 'admin';
- 
-    if (!isOwner) {
-        const hasUnlocked = await prisma.chapterUnlock.findFirst({
-            where: { chapterId, userId }
-        });
- 
-        if (!hasUnlocked) {
-            throw new AppError('You have not unlocked this chapter', 403);
+    if (!isFree) {
+        if (!userId) {
+            throw new AppError('Please log in to view this chapter', 401);
+        }
+
+        const isOwner = chapter.comic.creatorId === userId || userRole === 'admin';
+
+        if (!isOwner) {
+            const hasUnlocked = await prisma.chapterUnlock.findFirst({
+                where: { chapterId, userId }
+            });
+
+            if (!hasUnlocked) {
+                throw new AppError('You have not unlocked this chapter', 403);
+            }
         }
     }
-    
+
     await prisma.$transaction([
         prisma.chapter.update({
             where: { id: chapterId },
