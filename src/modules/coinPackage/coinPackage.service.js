@@ -6,7 +6,6 @@ const getAllPackage = async()=>{
         where: { isActive: true },
         orderBy: { price: 'asc' }
     });
-    console.log(packages)
     return packages;
 }
 

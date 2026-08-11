@@ -25,7 +25,7 @@ model User {
   role            Role      @relation(fields: [roleId], references: [id])
   comics          Comic[]
   coinWallet      CoinWallet?
-  payments        Payment[]
+  paymentTransaction  PaymentTransaction[]
   chapterUnlocks  ChapterUnlock[]
   comicRatings    ComicRating[]
   favoriteComics  FavoriteComic[]
@@ -161,11 +161,11 @@ model CoinTransaction {
   walletId        Int
   coinAmount          Int
   transactionType TransactionType
-  paymentId       Int?      @unique
+  paymentTransactionId       Int?      @unique
   createdAt       DateTime  @default(now())
 
   wallet          CoinWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  payment         Payment?   @relation(fields: [paymentId], references: [id])
+  paymentTransaction         PaymentTransaction?   @relation(fields: [paymentTransactionId], references: [id])
   
   @@index([walletId])
 }
@@ -175,18 +175,29 @@ enum TransactionType {
   SPEND
 }
 
-model Payment{
+model PaymentMethod {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique   // e.g. "Credit Card", "PromptPay"
+  code        String    @unique   // e.g. "stripe", "promptpay" — used in actual gateway calls
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  transactions PaymentTransaction[]
+}
+
+model PaymentTransaction{
   id              Int           @id @default(autoincrement())
   userId          Int
   amount          Int           // in cents, to avoid float rounding issues
   coinPackageId   Int?
-  paymentMethod   String        // e.g. "stripe", "paypal", "promptpay"
+  paymentMethodId   Int
   paymentStatus   PaymentStatus @default(PENDING)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
   user            User             @relation(fields: [userId], references: [id])
   coinTransaction CoinTransaction?
+  paymentMethod   PaymentMethod    @relation(fields: [paymentMethodId], references: [id])
   coinPackage   CoinPackage? @relation(fields: [coinPackageId], references: [id])
   
   @@index([userId])
@@ -208,7 +219,7 @@ model CoinPackage {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  payments    Payment[]
+  paymentTransaction    PaymentTransaction[]
 }
 
 model ChapterUnlock{

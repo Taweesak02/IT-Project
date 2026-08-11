@@ -7,6 +7,7 @@ const categoryRoutes = require('../modules/category/category.route')
 const uploadRoutes = require('../modules/upload/upload.route')
 const comicPublic = require('../modules/comicPublic/comicPublic.route')
 const coinPackage = require('../modules/coinPackage/coinPackage.route')
+const coinWallet = require('../modules/wallet/wallet.route')
 
 const router = express.Router();
 
@@ -24,5 +25,6 @@ router.use('/tag',tagRoutes);
 router.use('/category',categoryRoutes);
 router.use('/upload',uploadRoutes);
 router.use('/package',coinPackage);
+router.use('/wallet',coinWallet)
 
 module.exports = router;

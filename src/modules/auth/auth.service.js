@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const prisma = require('../../configs/db');
 const { generateToken } = require('../../utils/jwt');
 const { deleteFileByUrl } = require('../upload/upload.service');
+const {createWallet} = require('../../modules/wallet/wallet.service')
 const AppError = require('../../utils/AppError');
 const {
   refreshTokenExpiresInMinutes,
@@ -110,12 +111,7 @@ const registerUser = async ({ email, username, password }) => {
       include: { role: true },
     });
 
-    await tx.coinWallet.create({
-      data: {
-        userId: user.id,
-        balance: 0
-      }
-    });
+    await createWallet(user.id,tx)
 
     return user;
   });
