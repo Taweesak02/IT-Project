@@ -4,7 +4,6 @@ const {
     addPackage,
     editPackage,
     removePackage,
-    purchasePackage
 } = require('./coinPackage.service')
 
 const asyncHandler = require('../../utils/asyncHandler');
@@ -29,15 +28,6 @@ const add = asyncHandler(async(req,res)=>{
     res.status(201).json({success:true,...result});
 });
 
-const purchase = asyncHandler(async(req,res)=>{
-    const packageId = req.params.packageId
-    const paymentMethodId = req.body.paymentMethodId
-    const userId = req.user.sub
-
-    const result = await purchasePackage(userId,packageId,paymentMethodId)
-    res.status(201).json({success:true,...result});
-})
-
 const edit = asyncHandler(async(req,res)=>{
     const userRole = req.user.role;
     const packageId = Number(req.params.packageId);
@@ -59,7 +49,6 @@ module.exports = {
     getPackage,
     getOne,
     add,
-    purchase,
     edit,
     remove
 }
