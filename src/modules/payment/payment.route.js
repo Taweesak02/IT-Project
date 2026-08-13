@@ -6,6 +6,6 @@ const{
 
 const router = express.Router();
 
-router.post('/',authenticate,purchase)
+router.post('/package',authenticate,purchase)
 
 module.exports = router

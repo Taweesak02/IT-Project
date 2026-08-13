@@ -1,5 +1,6 @@
 const prisma = require('../../configs/db');
 const AppError = require('../../utils/AppError');
+const {isAdmin} = require('../../utils/checkUtil')
 
 const addCategory = async (userRole, categoryName) => {
     isAdmin(userRole);
@@ -95,12 +96,6 @@ const getCategoryById = async (categoryId) => {
     }
 
     return { category };
-};
-
-const isAdmin = (userRole) => {
-    if (userRole !== 'admin') {
-        throw new AppError('You do not have permission', 403);
-    }
 };
 
 module.exports = {

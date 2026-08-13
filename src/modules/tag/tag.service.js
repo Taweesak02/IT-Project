@@ -1,5 +1,6 @@
 const prisma = require('../../configs/db');
 const AppError = require('../../utils/AppError');
+const {isAdmin} = require('../../utils/checkUtil')
 
 const addTag = async(userRole,tagName)=>{
     isAdmin(userRole)
@@ -98,13 +99,6 @@ const getTagById = async(tagId)=>{
 
     return { tag };
 }
-
-const isAdmin = (userRole)=>{
-    if (userRole !== 'admin') {
-        throw new AppError('You do not have permission', 403);
-    }
-}
-
 
 module.exports = {
     addTag,

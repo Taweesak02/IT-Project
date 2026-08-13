@@ -8,6 +8,8 @@ const uploadRoutes = require('../modules/upload/upload.route')
 const comicPublic = require('../modules/comicPublic/comicPublic.route')
 const coinPackage = require('../modules/coinPackage/coinPackage.route')
 const coinWallet = require('../modules/wallet/wallet.route')
+const payment = require('../modules/payment/payment.route')
+const paymentMethod = require('../modules/paymentMethod/paymentMethod.route')
 
 const router = express.Router();
 
@@ -26,5 +28,8 @@ router.use('/category',categoryRoutes);
 router.use('/upload',uploadRoutes);
 router.use('/package',coinPackage);
 router.use('/wallet',coinWallet)
+router.use('/payment',payment)
+router.use('/paymentmethod',paymentMethod)
+router.use('/payment-method',paymentMethod)
 
 module.exports = router;

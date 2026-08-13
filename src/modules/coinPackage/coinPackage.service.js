@@ -1,5 +1,6 @@
 const prisma = require('../../configs/db');
 const AppError = require('../../utils/AppError');
+const {isAdmin} = require('../../utils/checkUtil')
 
 const getAllPackage = async()=>{
     const packages = await prisma.coinPackage.findMany({
@@ -71,11 +72,6 @@ const removePackage = async(userRole,packageId)=>{
     });
 }
 
-const isAdmin = async(userRole)=>{
-     if (userRole !== 'admin') {
-        throw new AppError('You do not have permission to perform this action', 403);
-    }
-}
 
 module.exports = {
     getAllPackage,
