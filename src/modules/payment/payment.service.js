@@ -54,6 +54,44 @@ const purchasePackage = async(userId,{packageId,paymentMethodId})=>{
 
 }
 
+const getPaymentStatus = async (transactionId, userId, userRole) => {
+    if (!transactionId || Number.isNaN(transactionId)) {
+        throw new AppError('transactionId is required', 400);
+    }
+
+    const transaction = await prisma.paymentTransaction.findUnique({
+        where: { id: transactionId },
+        include: {
+            coinPackage: { select: { name: true, coinAmount: true } },
+            paymentMethod: { select: { name: true } }
+        }
+    });
+
+    if (!transaction) {
+        throw new AppError('Transaction not found', 404);
+    }
+
+    // only the user who made the purchase (or admin) can view its status
+    if (transaction.userId !== userId && userRole !== 'admin') {
+        throw new AppError('You do not have permission to view this transaction', 403);
+    }
+
+    return transaction;
+};
+
+const getPaymentHistory = async (userId) => {
+    return prisma.paymentTransaction.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        include: {
+            coinPackage: { select: { name: true, coinAmount: true } },
+            paymentMethod: { select: { name: true } }
+        }
+    });
+};
+
 module.exports = {
-    purchasePackage
+    purchasePackage,
+    getPaymentHistory,
+    getPaymentStatus
 }
