@@ -11,6 +11,7 @@ const coinWallet = require('../modules/wallet/wallet.route')
 const payment = require('../modules/payment/payment.route')
 const paymentMethod = require('../modules/paymentMethod/paymentMethod.route')
 const rating = require('../modules/rating/rating.route')
+const favorite = require('../modules/favorite/favorite.route')
 
 const router = express.Router();
 
@@ -33,5 +34,6 @@ router.use('/payment',payment)
 router.use('/paymentmethod',paymentMethod)
 router.use('/payment-method',paymentMethod)
 router.use('/rating',rating)
+router.use('/favorite',favorite)
 
 module.exports = router;
