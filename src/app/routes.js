@@ -12,6 +12,7 @@ const payment = require('../modules/payment/payment.route')
 const paymentMethod = require('../modules/paymentMethod/paymentMethod.route')
 const rating = require('../modules/rating/rating.route')
 const favorite = require('../modules/favorite/favorite.route')
+const follow = require('../modules/follow/follow.route')
 
 const router = express.Router();
 
@@ -35,5 +36,6 @@ router.use('/paymentmethod',paymentMethod)
 router.use('/payment-method',paymentMethod)
 router.use('/rating',rating)
 router.use('/favorite',favorite)
+router.use('/follow',follow)
 
 module.exports = router;
