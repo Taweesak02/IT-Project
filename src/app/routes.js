@@ -14,6 +14,7 @@ const rating = require('../modules/rating/rating.route')
 const favorite = require('../modules/favorite/favorite.route')
 const follow = require('../modules/follow/follow.route')
 const comment = require('../modules/comment/comment.route')
+const history = require('../modules/history/history.route')
 
 const router = express.Router();
 
@@ -39,5 +40,6 @@ router.use('/rating',rating)
 router.use('/favorite',favorite)
 router.use('/follow',follow)
 router.use('/comment',comment)
+router.use('/history',history)
 
 module.exports = router;

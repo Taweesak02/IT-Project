@@ -3,6 +3,7 @@ const prisma = require('../../configs/db');
 const { deleteFileByUrl } = require('../upload/upload.service');
 const {formatChapterContent} = require('./chapter.model')
 const {incrementChapterCount,decreaseChapterCount} = require('../comicManagement/comicManagement.service')
+const {upsertReadHistory} = require('../history/history.service')
 
 const getChaptersByComicId = async(comicId)=>{
     if (!comicId || Number.isNaN(comicId)) {
@@ -87,16 +88,21 @@ const getChapterContent = async(chapterId,userId,userRole)=>{
         }
     }
 
-    await prisma.$transaction([
-        prisma.chapter.update({
+    await prisma.$transaction(async (tx) => {
+        await tx.chapter.update({
             where: { id: chapterId },
             data: { viewCount: { increment: 1 } }
-        }),
-        prisma.comic.update({
+        });
+        await tx.comic.update({
             where: { id: chapter.comic.id },
             data: { viewCount: { increment: 1 } }
-        })
-    ]);
+        });
+
+        // only track read history for logged-in users — anonymous readers have no userId to attach it to
+        if (userId) {
+            await upsertReadHistory(userId, chapterId, tx);
+        }
+    });
 
     return formatChapterContent(chapter);
 }
