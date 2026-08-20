@@ -33,6 +33,7 @@ model User {
   comments        Comment[]
   readHistory     ReadHistory[]
   refreshTokens   RefreshToken[]
+  notifications Notification[]
 }
 
 model Role {
@@ -320,4 +321,19 @@ model RefreshToken {
 
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId])
+}
+
+model Notification {
+  id                Int       @id @default(autoincrement())
+  userId            Int
+  type              String    // e.g. "NEW_CHAPTER"
+  message           String
+  isRead            Boolean   @default(false)
+  relatedComicId    Int?
+  relatedChapterId  Int?
+  createdAt         DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
 }

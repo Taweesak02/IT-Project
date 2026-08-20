@@ -4,6 +4,7 @@ const { deleteFileByUrl } = require('../upload/upload.service');
 const {formatChapterContent} = require('./chapter.model')
 const {incrementChapterCount,decreaseChapterCount} = require('../comicManagement/comicManagement.service')
 const {upsertReadHistory} = require('../history/history.service')
+const { notifyFollowersOfNewChapter } = require('../notification/notification.service');
 
 const getChaptersByComicId = async(comicId)=>{
     if (!comicId || Number.isNaN(comicId)) {
@@ -140,6 +141,7 @@ const addChapter = async(userId,userRole,{comicId,chapterNumber,title,coinCost,p
                 include: { pages: true }
             });
             await incrementChapterCount(comicId,tx);
+            await notifyFollowersOfNewChapter(comicId, comic.title, chapter.title, tx);
             return chapter;
         })
         return createdChapter
