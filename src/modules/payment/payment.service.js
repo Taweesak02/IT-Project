@@ -4,7 +4,7 @@ const {getWallet,increaseWallet} = require('../wallet/wallet.service')
 const {getOnePackage} = require("../coinPackage/coinPackage.service")
 
 const purchasePackage = async(userId,{packageId,paymentMethodId})=>{
-    const package = await getOnePackage(packageId)
+    const coinPackage = await getOnePackage(packageId)
 
     if(!paymentMethodId){
         throw new AppError('paymentMethodId is required', 400);
@@ -20,8 +20,8 @@ const purchasePackage = async(userId,{packageId,paymentMethodId})=>{
         const paymentTransaction = await tx.paymentTransaction.create({
             data: {
                 userId,
-                amount: package.price,
-                coinPackageId: package.id,
+                amount: coinPackage.price,
+                coinPackageId: coinPackage.id,
                 paymentMethodId,
                 paymentStatus: 'PENDING'
             }
@@ -34,12 +34,12 @@ const purchasePackage = async(userId,{packageId,paymentMethodId})=>{
 
         const wallet = await getWallet(userId);
 
-        await increaseWallet(wallet.id,package.coinAmount,tx)
+        await increaseWallet(wallet.id,coinPackage.coinAmount,tx)
 
         const coinTransaction = await tx.coinTransaction.create({
             data: {
                 walletId: wallet.id,
-                coinAmount: package.coinAmount,
+                coinAmount: coinPackage.coinAmount,
                 transactionType: 'PURCHASE',
                 paymentTransactionId: completedPayment.id
             }
