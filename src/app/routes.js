@@ -16,6 +16,7 @@ const follow = require('../modules/follow/follow.route')
 const comment = require('../modules/comment/comment.route')
 const history = require('../modules/history/history.route')
 const notification = require('../modules/notification/notification.route')
+const admin = require('../modules/admin/admin.route')
 
 const router = express.Router();
 
@@ -43,5 +44,6 @@ router.use('/follow',follow)
 router.use('/comment',comment)
 router.use('/history',history)
 router.use('/notification',notification)
+router.use('/admin',admin)
 
 module.exports = router;
