@@ -18,17 +18,17 @@ const {
 const asyncHandler = require('../../utils/asyncHandler')
 
 const register = asyncHandler(async (req, res) => {
-  const registerData = req.body;
+  const { email, username, password } = req.body;
 
-  const result = await registerUser(registerData);
-  res.status(201).json({ success: true, ...result });
+  const result = await registerUser(email, username, password );
+  res.status(201).json({ success: true, data: result });
 });
 
 const login = asyncHandler(async (req, res) => {
-  const loginData = req.body;
+  const { email, password } = req.body;
 
-  const result = await loginUser(loginData);
-  res.json({ success: true, ...result });
+  const result = await loginUser( email, password );
+  res.json({ success: true, data: result });
 });
 
 const refresh = asyncHandler(async (req, res) => {

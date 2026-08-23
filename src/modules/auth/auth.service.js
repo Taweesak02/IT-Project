@@ -73,7 +73,7 @@ const createSessionTokens = async (user) => {
   return { accessToken, refreshToken };
 };
 
-const registerUser = async ({ email, username, password }) => {
+const registerUser = async (email, username, password ) => {
   if (!email || !password) {
     throw new AppError('Email and password are required', 400);
   }
@@ -122,8 +122,7 @@ const registerUser = async ({ email, username, password }) => {
 
   const response = {
     user: sanitizeUser(createdUser),
-    accessToken,
-    refreshToken,
+    token: {accessToken,refreshToken},
     message: 'Registration successful. Please verify your email.',
   };
 
@@ -135,7 +134,7 @@ const registerUser = async ({ email, username, password }) => {
   return response;
 };
 
-const loginUser = async ({ email, password }) => {
+const loginUser = async ( email, password ) => {
   if (!email || !password) {
     throw new AppError('Email and password are required', 400);
   }
