@@ -121,7 +121,7 @@ add('/admin/dashboard', 'get', 'Get admin dashboard', { tags: ['Admin'], secured
 
 module.exports = {
   openapi: '3.0.3',
-  info: { title: 'Webproject API', version: '1.0.0', description: 'Complete API documentation for the Webproject comic platform.' },
+  info: { title: 'Online Comic System Backend API', version: '1.0.0', description: 'เอกสาร API สำหรับระบบการ์ตูนออนไลน์ (Backend)' },
   servers: [{ url: '/api', description: 'Current API server' }],
   tags: ['Authentication', 'Comic management', 'Public comics', 'Chapters', 'Tag', 'Category', 'Uploads', 'Payments', 'Wallet', 'Community', 'Admin'].map((name) => ({ name })),
   paths,

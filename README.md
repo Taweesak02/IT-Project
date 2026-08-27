@@ -1,16 +1,37 @@
-# Webproject API
+# 📚 Online Comic System Backend
 
-REST API สำหรับแพลตฟอร์มอ่านและจัดการการ์ตูน พัฒนาด้วย Node.js, Express, Prisma และ PostgreSQL
+ระบบการ์ตูนออนไลน์ | Backend REST API
 
-## เริ่มต้นใช้งาน
+บริการเบื้องหลังสำหรับแพลตฟอร์มอ่านและจัดการการ์ตูน พัฒนาด้วย Node.js, Express, Prisma และ PostgreSQL
 
-### ความต้องการของระบบ
+![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?logo=prisma&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17%2B-4169E1?logo=postgresql&logoColor=white)
+
+---
+
+## 🌟 ภาพรวม
+
+Backend API สำหรับผู้ใช้งาน นักเขียน และผู้ดูแลระบบ รองรับ authentication, การจัดการการ์ตูนและ chapter, ระบบ coin และการชำระเงิน, rating, favorite, follow, comment, ประวัติการอ่าน และ notification
+
+### 🔗 ทางลัด
+
+| รายการ | ลิงก์ |
+|---|---|
+| API Documentation | [/api-docs](http://localhost:3000/api-docs) |
+| OpenAPI JSON | [/api-docs.json](http://localhost:3000/api-docs.json) |
+| API Health Check | [/api/health](http://localhost:3000/api/health) |
+
+## 🚀 เริ่มต้นใช้งาน
+
+### ✅ ความต้องการของระบบ
 
 - Node.js 22 ขึ้นไป
 - PostgreSQL 17 ขึ้นไป หรือ Docker Desktop
 - npm
 
-### ติดตั้งแบบ Local
+### 💻 ติดตั้งแบบ Local
 
 ```bash
 npm install
@@ -27,7 +48,7 @@ npm run dev
 
 เซิร์ฟเวอร์จะทำงานที่ `http://localhost:3000`
 
-### Swagger API Documentation
+### 🧭 Swagger API Documentation
 
 หลังจากเริ่มเซิร์ฟเวอร์แล้ว เปิดเอกสารแบบ interactive ได้ที่:
 
@@ -36,7 +57,7 @@ npm run dev
 
 ใน Swagger UI กด **Authorize** แล้วใส่ `Bearer <accessToken>` เพื่อทดลองเรียก endpoint ที่ต้องเข้าสู่ระบบ
 
-### ติดตั้งด้วย Docker Compose
+### 🐳 ติดตั้งด้วย Docker Compose
 
 กำหนด `JWT_SECRET` และ `SEED_ADMIN_PASSWORD` ใน environment ของเครื่องก่อนเริ่มใช้งานจริง แล้วรัน:
 
@@ -46,7 +67,7 @@ docker compose up --build
 
 Docker Compose จะเริ่ม PostgreSQL, deploy migration และเปิด API ที่ `http://localhost:3000`
 
-## Environment Variables
+## ⚙️ Environment Variables
 
 | ตัวแปร | จำเป็น | ค่าเริ่มต้น | รายละเอียด |
 |---|---:|---|---|
@@ -60,7 +81,7 @@ Docker Compose จะเริ่ม PostgreSQL, deploy migration และเ�
 | `SEED_ADMIN_PASSWORD` | ใช้ตอน seed | - | รหัสผ่าน admin เริ่มต้น |
 | `NODE_ENV` | ไม่ | `development` | ใช้ `production` เมื่อ deploy |
 
-## ข้อมูลพื้นฐานของ API
+## 📡 ข้อมูลพื้นฐานของ API
 
 - Base URL: `http://localhost:3000/api`
 - ตรวจสอบสถานะระบบ: `GET /api/health`
@@ -75,9 +96,9 @@ Docker Compose จะเริ่ม PostgreSQL, deploy migration และเ�
 }
 ```
 
-## Authentication
+## 🔐 Authentication
 
-### สมัครสมาชิก
+### ✍️ สมัครสมาชิก
 
 `POST /api/auth/register`
 
@@ -89,7 +110,7 @@ Docker Compose จะเริ่ม PostgreSQL, deploy migration และเ�
 }
 ```
 
-### เข้าสู่ระบบ
+### 🔑 เข้าสู่ระบบ
 
 `POST /api/auth/login`
 
@@ -106,9 +127,9 @@ Docker Compose จะเริ่ม PostgreSQL, deploy migration และเ�
 Authorization: Bearer <accessToken>
 ```
 
-## รายการ Endpoint
+## 🗂️ รายการ Endpoint
 
-### Auth `/auth`
+### 🔐 Auth `/auth`
 
 | Method | Path | Auth | รายละเอียด |
 |---|---|:---:|---|
@@ -127,7 +148,7 @@ Authorization: Bearer <accessToken>
 | PATCH | `/update-email`, `/updateemail` | 🔒 | เปลี่ยนอีเมล |
 | DELETE | `/delete-account`, `/deleteaccount` | 🔒 | ลบบัญชี |
 
-### การ์ตูนสาธารณะ `/comic-public`
+### 📖 การ์ตูนสาธารณะ `/comic-public`
 
 | Method | Path | Auth | รายละเอียด |
 |---|---|:---:|---|
@@ -139,7 +160,7 @@ Authorization: Bearer <accessToken>
 
 รองรับ alias เดิม `/api/comicpublic` ด้วย
 
-### จัดการการ์ตูน `/comic-manage`
+### 🛠️ จัดการการ์ตูน `/comic-manage`
 
 | Method | Path | Auth | รายละเอียด |
 |---|---|:---:|---|
@@ -152,7 +173,7 @@ Authorization: Bearer <accessToken>
 
 รองรับ alias เดิม `/api/comicmanage` ด้วย
 
-### Chapter `/chapter`
+### 📄 Chapter `/chapter`
 
 | Method | Path | Auth | รายละเอียด |
 |---|---|:---:|---|
@@ -165,7 +186,7 @@ Authorization: Bearer <accessToken>
 | DELETE | `/:chapterId` | 🔒 | ลบ chapter |
 | POST | `/:chapterId/unlock` | 🔒 | ปลดล็อก chapter ด้วย coin |
 
-### หมวดหมู่และแท็ก
+### 🏷️ หมวดหมู่และแท็ก
 
 `/category` และ `/tag` ใช้เมธอดเหมือนกัน:
 
@@ -177,7 +198,7 @@ Authorization: Bearer <accessToken>
 | PATCH | `/:id` | 🔒 | แก้ไขรายการ |
 | DELETE | `/:id` | 🔒 | ลบรายการ |
 
-### ปฏิสัมพันธ์กับการ์ตูน
+### ❤️ ปฏิสัมพันธ์กับการ์ตูน
 
 | กลุ่ม | Method | Path | Auth | รายละเอียด |
 |---|---|---|:---:|---|
@@ -196,7 +217,7 @@ Authorization: Bearer <accessToken>
 | Comment | PATCH | `/comment/:commentId` | 🔒 | แก้ไขความคิดเห็น |
 | Comment | DELETE | `/comment/:commentId` | 🔒 | ลบความคิดเห็น |
 
-### Upload `/upload`
+### 📤 Upload `/upload`
 
 ใช้ `multipart/form-data` และชื่อ field เป็น `image`
 
@@ -207,7 +228,7 @@ Authorization: Bearer <accessToken>
 | POST | `/avatar` | 🔒 | อัปโหลดรูปโปรไฟล์ |
 | DELETE | `/` | 🔒 | ลบไฟล์ที่อัปโหลด |
 
-### Coin และการชำระเงิน
+### 💳 Coin และการชำระเงิน
 
 | Method | Path | Auth | รายละเอียด |
 |---|---|:---:|---|
@@ -226,7 +247,7 @@ Authorization: Bearer <accessToken>
 | PATCH | `/payment-method/:paymentMethodId` | 🔒 | แก้ไขวิธีชำระเงิน |
 | DELETE | `/payment-method/:paymentMethodId` | 🔒 | ลบวิธีชำระเงิน |
 
-### ประวัติและการแจ้งเตือน
+### 🔔 ประวัติและการแจ้งเตือน
 
 | Method | Path | Auth | รายละเอียด |
 |---|---|:---:|---|
@@ -234,7 +255,7 @@ Authorization: Bearer <accessToken>
 | GET | `/notification` | 🔒 | ดูการแจ้งเตือน |
 | PATCH | `/notification/:notificationId/read` | 🔒 | ทำเครื่องหมายว่าอ่านแล้ว |
 
-### Admin `/admin`
+### 👑 Admin `/admin`
 
 Endpoint กลุ่มนี้ต้องใช้ access token ของผู้ดูแลระบบ
 
@@ -247,7 +268,7 @@ Endpoint กลุ่มนี้ต้องใช้ access token ของผ
 | PATCH | `/users/:id/unban` | 🔒 | ยกเลิกการระงับผู้ใช้ |
 | GET | `/transactions` | 🔒 | ดูรายการธุรกรรม |
 
-## ตัวอย่างการเรียก API
+## 🧪 ตัวอย่างการเรียก API
 
 ตรวจสอบระบบ:
 
@@ -283,7 +304,7 @@ curl -X POST http://localhost:3000/api/upload/cover \
   -F "image=@./cover.jpg"
 ```
 
-## คำสั่งที่ใช้บ่อย
+## 🔧 คำสั่งที่ใช้บ่อย
 
 ```bash
 npm run dev             # รัน development server
@@ -295,7 +316,7 @@ npm run prisma:migrate  # สร้างและรัน migration สำห�
 npm run prisma:deploy   # deploy migration ที่มีอยู่
 ```
 
-## โครงสร้างโปรเจกต์
+## 📁 โครงสร้างโปรเจกต์
 
 ```text
 src/
