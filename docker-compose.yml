@@ -33,7 +33,7 @@ services:
       - "3000:3000"
     volumes:
       - ./public/uploads:/app/public/uploads
-    command: ["sh", "-c", "npm run prisma:deploy && npm run start"]
+    command: ["sh", "-c", "npm run prisma:deploy && npx prisma db seed && npm run start"]
 
 volumes:
   postgres-data:
