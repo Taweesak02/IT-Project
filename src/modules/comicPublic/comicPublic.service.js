@@ -9,25 +9,28 @@ const ALLOWED_SORTS = {
 };
 
 
-const searchComic = async({title,tags,categorys,sort,page,limit})=>{
+const searchComic = async({title,comicname,tags,tag,categorys,category,sort,page,limit})=>{
     const currentPage = Number(page) > 0 ? Number(page) : 1;
     const pageSize = Number(limit) > 0 ? Number(limit) : 20;
+    const searchTitle = title ?? comicname;
+    const tagIds = [tags ?? tag].flat().filter(Boolean).map(Number);
+    const categoryIds = [categorys ?? category].flat().filter(Boolean).map(Number);
  
     const where = {
         approved: true,
-        ...(title && {
-            title: { contains: title, mode: 'insensitive' }
+        ...(searchTitle && {
+            title: { contains: searchTitle, mode: 'insensitive' }
         }),
-        ...(tags?.length && {
-            tags: { some: { tagId: { in: tags.map(Number) } } }
+        ...(tagIds.length && {
+            tags: { some: { tagId: { in: tagIds } } }
         }),
-        ...(categorys?.length && {
-            categories: { some: { categoryId: { in: categorys.map(Number) } } }
+        ...(categoryIds.length && {
+            categories: { some: { categoryId: { in: categoryIds } } }
         })
     };
  
     const orderBy = ALLOWED_SORTS[sort] ?? ALLOWED_SORTS.latest;
- 
+    
     const [comics, total] = await prisma.$transaction([
         prisma.comic.findMany({
             where,
