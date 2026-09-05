@@ -135,7 +135,7 @@ const getDashboard = async (userRole) => {
     isAdmin(userRole);
 
     const [stats, recentUsers, recentComics, topComics] = await Promise.all([
-        getStatistic('admin'),
+        getAllStatistic('admin'),
         prisma.user.findMany({
             take: 5,
             orderBy: { createdAt: 'desc' },
