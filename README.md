@@ -148,17 +148,18 @@ Authorization: Bearer <accessToken>
 | PATCH | `/update-email`, `/updateemail` | 🔒 | เปลี่ยนอีเมล |
 | DELETE | `/delete-account`, `/deleteaccount` | 🔒 | ลบบัญชี |
 
-### 📖 การ์ตูนสาธารณะ `/comic-public`
+### 📖 การ์ตูนสาธารณะ `/public`
 
 | Method | Path | Auth | รายละเอียด |
 |---|---|:---:|---|
-| GET | `/` | - | รายการการ์ตูนสาธารณะ |
-| GET | `/popular` | - | การ์ตูนยอดนิยม |
+| GET | `/` | - | ค้นหาการ์ตูนสาธารณะ รองรับ `title`, `comicname`, `tag`, `tags`, `category`, `categorys`, `sort`, `page` และ `limit` |
+| GET | `/most-view` | - | การ์ตูนที่มียอดอ่านสูงสุด |
 | GET | `/top-rated` | - | การ์ตูนที่มีคะแนนสูง |
 | GET | `/most-followed` | - | การ์ตูนที่มีผู้ติดตามมาก |
+| GET | `/most-favorite` | - | การ์ตูนที่มีผู้ชื่นชอบมาก |
+| GET | `/user?username=...&sort=latest&page=1&limit=20` | - | ค้นหาผู้ใช้จาก username รองรับ `sort`: `latest`, `oldest`, `username` |
+| GET | `/user/:userId` | - | ดูการ์ตูนสาธารณะทั้งหมดของผู้ใช้ เรียงจากใหม่ไปเก่า |
 | GET | `/:comicId` | - | รายละเอียดการ์ตูน |
-
-รองรับ alias เดิม `/api/comicpublic` ด้วย
 
 ### 🛠️ จัดการการ์ตูน `/comic-manage`
 

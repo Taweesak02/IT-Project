@@ -27,8 +27,7 @@ router.get('/health', (_req, res) => {
 router.use('/auth', authRoutes);
 router.use('/comic-manage', comicsRoutes);
 router.use('/comicmanage', comicsRoutes);
-router.use('/comic-public',comicPublic)
-router.use('/comicpublic',comicPublic)
+router.use('/public',comicPublic)
 router.use('/chapter',chapterRoutes);
 router.use('/tag',tagRoutes);
 router.use('/category',categoryRoutes);
