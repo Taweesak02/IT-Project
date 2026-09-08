@@ -76,6 +76,7 @@ addAliases(publicBases, '/{comicId}', 'get', 'Get public comic detail', { tags: 
 
 add('/chapter/', 'get', 'List chapters for a comic', { tags: ['Chapters'], parameters: [{ name: 'comicId', in: 'query', required: true, schema: { type: 'integer' } }] });
 add('/chapter/', 'post', 'Create a chapter', { tags: ['Chapters'], secured: true, body: jsonBody({ comicId: { type: 'integer' }, chapterNumber: { type: 'integer' }, title: { type: 'string' }, coinCost: { type: 'integer' }, pages: { type: 'array', items: { type: 'string' } } }, ['comicId', 'title', 'pages']) });
+add('/chapter/unlocked', 'get', 'List my unlocked chapters', { tags: ['Chapters'], secured: true, parameters: [{ name: 'comicId', in: 'query', schema: { type: 'integer', minimum: 1 } }], description: 'Returns chapter metadata for the authenticated user’s unlocks, optionally filtered by comicId. Returns an empty array when none match.' });
 add('/chapter/{chapterId}', 'get', 'Get chapter metadata', { tags: ['Chapters'], parameters: [id('chapterId')] });
 add('/chapter/{chapterId}', 'patch', 'Edit a chapter', { tags: ['Chapters'], secured: true, parameters: [id('chapterId')], body: jsonBody({ title: { type: 'string' }, coinCost: { type: 'integer' } }) });
 add('/chapter/{chapterId}', 'delete', 'Delete a chapter', { tags: ['Chapters'], secured: true, parameters: [id('chapterId')] });

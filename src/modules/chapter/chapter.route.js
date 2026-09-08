@@ -3,6 +3,7 @@ const authenticate = require('../../middlewares/auth.middleware');
 const optionalAuth = require('../../middlewares/optionalAuth.middleware');
 const {
     getChapters,
+    getUnlocked,
     getOne,
     getContent,
     add,
@@ -14,8 +15,8 @@ const {
 
 const router = express.Router();
 
-// public — no auth needed
 router.get('/',getChapters);
+router.get('/unlocked',authenticate,getUnlocked);
 router.get('/:chapterId',getOne);
 
 router.get('/:chapterId/content',optionalAuth,getContent);
