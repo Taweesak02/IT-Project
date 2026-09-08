@@ -10,14 +10,14 @@ const asyncHandler = require('../../utils/asyncHandler');
 
 const getPackage = asyncHandler(async(req,res)=>{
     const result = await getAllPackage();
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 });
 
 const getOne = asyncHandler(async(req,res)=>{
     const packageId = Number(req.params.packageId);
 
     const result = await getOnePackage(packageId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 });
 
 const add = asyncHandler(async(req,res)=>{
@@ -25,7 +25,7 @@ const add = asyncHandler(async(req,res)=>{
     const packageData = req.body;
 
     const result = await addPackage(userRole,packageData);
-    res.status(201).json({success:true,...result});
+    res.status(201).json({success:true,data:result});
 });
 
 const edit = asyncHandler(async(req,res)=>{
@@ -34,7 +34,7 @@ const edit = asyncHandler(async(req,res)=>{
     const packageData = req.body;
 
     const result = await editPackage(userRole,packageId,packageData);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 });
 
 const remove = asyncHandler(async(req,res)=>{
@@ -42,7 +42,7 @@ const remove = asyncHandler(async(req,res)=>{
     const packageId = Number(req.params.packageId);
 
     const result = await removePackage(userRole,packageId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 module.exports = {

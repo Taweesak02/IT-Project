@@ -16,27 +16,27 @@ const add = asyncHandler(async(req,res)=>{
 
 const edit = asyncHandler(async(req,res)=>{
     const result = await editComic(Number(req.params.id),req.user.sub,req.user.role,req.body);
-    res.status(200).json({ success: true, data: result });
+    res.json({ success: true, data: result });
 });
 
 const remove = asyncHandler(async(req,res)=>{
     const result = await removeComic(Number(req.params.id),req.user.sub,req.user.role);
-    res.status(200).json({ success: true, data: result });
+    res.json({ success: true, data: result });
 });
 
 const getOne = asyncHandler(async(req,res)=>{
     const result = await getComicById(Number(req.params.id),req.user.sub,req.user.role);
-    res.status(200).json({ success: true, data: result });
+    res.json({ success: true, data: result });
 });
 
 const getMyComics = asyncHandler(async(req,res)=>{
     const result = await getComicByCreator(req.user.sub);
-    res.status(200).json({ success: true, data: result });
+    res.json({ success: true, data: result });
 });
 
 const statistic = asyncHandler(async(req,res)=>{
     const result = await getComicStatistic(Number(req.params.id),req.user.sub,req.user.role);
-    res.status(200).json({ success: true, data: result });
+    res.json({ success: true, data: result });
 });
 
 module.exports = {

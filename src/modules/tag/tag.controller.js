@@ -12,7 +12,7 @@ const add = asyncHandler(async(req,res)=>{
     const tagName = req.body.name;
     
     const result = await addTag(userRole,tagName);
-    res.status(201).json({success:true,...result});
+    res.status(201).json({success:true,data:result});
 });
 
 const edit = asyncHandler(async(req,res)=>{
@@ -21,7 +21,7 @@ const edit = asyncHandler(async(req,res)=>{
     const newTagName = req.body.name;
 
     const result = await editTag(tagId,userRole,newTagName);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 });
 
 const remove = asyncHandler(async(req,res)=>{
@@ -29,19 +29,19 @@ const remove = asyncHandler(async(req,res)=>{
     const userRole = req.user.role;
 
     const result = await removeTag(tagId,userRole);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 });
 
 const getTags = asyncHandler(async(req,res)=>{
     const result = await getAllTags();
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 });
 
 const getOneTag = asyncHandler(async(req,res)=>{
     const tagId = req.params.tagId
 
     const result = await getTagById(tagId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 });
 
 module.exports = {

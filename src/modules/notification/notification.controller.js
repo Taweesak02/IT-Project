@@ -9,7 +9,7 @@ const getNotifications = asyncHandler(async(req,res)=>{
     const userId = req.user.sub
 
     const result = await getMyNotifications(userId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 const read = asyncHandler(async(req,res)=>{
@@ -17,7 +17,7 @@ const read = asyncHandler(async(req,res)=>{
     const userId = req.user.sub
 
     const result = await markAsRead(notificationId,userId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 module.exports = {

@@ -11,14 +11,14 @@ const asyncHandler = require('../../utils/asyncHandler');
 const getAll = asyncHandler(async(req,res)=>{
     
     const result = await getAllPayment();
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 const getOne = asyncHandler(async(req,res)=>{
     const paymentMethodId = Number(req.params.paymentMethodId)
     
     const result = await getOnePayment(paymentMethodId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 const add = asyncHandler(async(req,res)=>{
@@ -26,7 +26,7 @@ const add = asyncHandler(async(req,res)=>{
     const userRole = req.user.role
 
     const result = await addPayment(userRole,paymentData);
-    res.status(201).json({success:true,...result});
+    res.status(201).json({success:true,data:result});
 })
 
 const edit = asyncHandler(async(req,res)=>{
@@ -35,7 +35,7 @@ const edit = asyncHandler(async(req,res)=>{
     const userRole = req.user.role
 
     const result = await editPayment(userRole,paymentMethodId,editData);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 const remove = asyncHandler(async(req,res)=>{
@@ -43,7 +43,7 @@ const remove = asyncHandler(async(req,res)=>{
     const userRole = req.user.role
 
     const result = await removePayment(userRole,paymentMethodId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 module.exports = {

@@ -11,7 +11,7 @@ const getByChapter = asyncHandler(async(req,res)=>{
     const chapterId = Number(req.params.chapterId)
 
     const result = await getCommentsByChapter(chapterId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 const add = asyncHandler(async(req,res)=>{
@@ -20,7 +20,7 @@ const add = asyncHandler(async(req,res)=>{
     const content = req.body.content
 
     const result = await addComment(chapterId,userId,content);
-    res.status(201).json({success:true,...result});
+    res.status(201).json({success:true,data:result});
 })
 
 const edit = asyncHandler(async(req,res)=>{
@@ -30,7 +30,7 @@ const edit = asyncHandler(async(req,res)=>{
     const content = req.body.content
 
     const result = await editComment(commentId,userId,userRole,content);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 const remove = asyncHandler(async(req,res)=>{
@@ -39,7 +39,7 @@ const remove = asyncHandler(async(req,res)=>{
     const userRole = req.user.role
 
     const result = await removeComment(commentId,userId,userRole);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 module.exports = {
