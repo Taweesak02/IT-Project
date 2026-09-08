@@ -2,8 +2,7 @@ const {
     getAllStatistic,
     banUser,
     unbanUser,
-    getTransactions,
-    getDashboard
+    getTransactions
 } = require('./admin.service')
 
 const asyncHandler = require('../../utils/asyncHandler');
@@ -39,16 +38,8 @@ const transactions = asyncHandler(async(req,res)=>{
     res.status(200).json({success:true,...result});
 })
 
-const dashboard = asyncHandler(async(req,res)=>{
-    const userRole = req.user.role
-
-    const result = await getDashboard(userRole);
-    res.status(200).json({success:true,...result});
-})
-
 module.exports = {
     getStatistic,
     ban,unban,
-    transactions,
-    dashboard
+    transactions
 }

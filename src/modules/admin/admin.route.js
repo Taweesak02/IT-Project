@@ -4,8 +4,7 @@ const{
     getStatistic,
     ban,
     unban,
-    transactions,
-    dashboard
+    transactions
 } = require('./admin.controller');
 
 const router = express.Router()
@@ -14,6 +13,5 @@ router.get('/statistic', authenticate, getStatistic);
 router.patch('/users/:id/ban', authenticate, ban);
 router.patch('/users/:id/unban', authenticate, unban);
 router.get('/transactions', authenticate, transactions);
-router.get('/dashboard', authenticate, dashboard);
 
 module.exports = router

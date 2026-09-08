@@ -136,7 +136,6 @@ add('/admin/statistic', 'get', 'Get platform statistics', { tags: ['Admin'], sec
 add('/admin/users/{id}/ban', 'patch', 'Ban a user', { tags: ['Admin'], secured: true, parameters: [id('id')] });
 add('/admin/users/{id}/unban', 'patch', 'Unban a user', { tags: ['Admin'], secured: true, parameters: [id('id')] });
 add('/admin/transactions', 'get', 'List payment transactions', { tags: ['Admin'], secured: true, parameters: transactionQuery });
-add('/admin/dashboard', 'get', 'Get admin dashboard', { tags: ['Admin'], secured: true });
 
 module.exports = {
   openapi: '3.0.3',
