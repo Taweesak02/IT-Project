@@ -34,15 +34,9 @@ const purchasePackage = async(userId,{packageId,paymentMethodId})=>{
 
         const wallet = await getWallet(userId);
 
-        await increaseWallet(wallet.id,coinPackage.coinAmount,tx)
-
-        const coinTransaction = await tx.coinTransaction.create({
-            data: {
-                walletId: wallet.id,
-                coinAmount: coinPackage.coinAmount,
-                transactionType: 'PURCHASE',
-                paymentTransactionId: completedPayment.id
-            }
+        const coinTransaction = await increaseWallet(wallet.id, coinPackage.coinAmount, tx, {
+            transactionType: 'PURCHASE',
+            paymentTransactionId: completedPayment.id
         });
 
         return {
