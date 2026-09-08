@@ -21,6 +21,7 @@ describe('Public routes', () => {
     ['get', '/api/comic-public/popular'],
     ['get', '/api/comic-public/top-rated'],
     ['get', '/api/comic-public/most-followed'],
+    ['get', '/api/comic-public/newupdate'],
     ['get', '/api/comic-public/1'],
     ['get', '/api/comicpublic/'],
     ['get', '/api/comicpublic/popular'],

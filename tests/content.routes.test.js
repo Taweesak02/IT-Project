@@ -15,6 +15,7 @@ describe('Content management routes', () => {
     ['patch', '/api/comicmanage/1'],
     ['delete', '/api/comicmanage/1'],
     ['post', '/api/chapter/'],
+    ['get', '/api/chapter/unlocked'],
     ['patch', '/api/chapter/1'],
     ['put', '/api/chapter/1/pages'],
     ['delete', '/api/chapter/1'],

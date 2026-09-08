@@ -1,19 +1,24 @@
 const express = require('express');
 const {
     getComic,
-    popular,
+    mostView,
     topRated,
     mostFollowed,
+    mostFavorite,
+    searchUsers,
+    getUserComics,
     getComicDetail
 } = require('./comicPublic.controller');
 
 const router = express.Router();
 
 router.get('/',getComic);
-router.get('/popular',popular);
-router.get('/top-rated', topRated);             // sorted by average rating
-router.get('/most-followed', mostFollowed);     // sorted by follow count
-// router.get('/newupdate', newUpdate);  
+router.get('/user', searchUsers);
+router.get('/user/:userId', getUserComics);
+router.get('/most-view',mostView);
+router.get('/top-rated', topRated);             
+router.get('/most-followed', mostFollowed);     
+router.get('/most-favorite', mostFavorite);
 router.get('/:comicId',getComicDetail);
 
 

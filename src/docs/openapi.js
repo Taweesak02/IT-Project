@@ -50,13 +50,33 @@ addAliases(contentBases, '/{id}', 'patch', 'Edit a comic', { secured: true, tags
 addAliases(contentBases, '/{id}', 'delete', 'Delete a comic', { secured: true, tags: ['Comic management'], parameters: [id('id')] });
 addAliases(contentBases, '/{id}/statistic', 'get', 'Get comic statistics', { secured: true, tags: ['Comic management'], parameters: [id('id')] });
 
-const publicBases = ['/comic-public', '/comicpublic'];
-addAliases(publicBases, '/', 'get', 'Search public comics', { tags: ['Public comics'], parameters: ['tag', 'category', 'comicname', 'sort', 'status', 'page', 'limit'].map((name) => ({ name, in: 'query', schema: { type: 'string' } })) });
-['popular', 'top-rated', 'most-followed'].forEach((name) => addAliases(publicBases, `/${name}`, 'get', `Get ${name} comics`, { tags: ['Public comics'], parameters: [{ name: 'limit', in: 'query', schema: { type: 'integer', minimum: 1 } }] }));
+const publicBases = ['/public'];
+addAliases(publicBases, '/', 'get', 'Search public comics', {
+  tags: ['Public comics'],
+  parameters: ['title', 'comicname', 'tag', 'tags', 'category', 'categorys', 'sort', 'page', 'limit'].map((name) => ({ name, in: 'query', schema: { type: 'string' } }))
+});
+['most-view', 'top-rated', 'most-followed', 'most-favorite'].forEach((name) => addAliases(publicBases, `/${name}`, 'get', `Get ${name} comics`, {
+  tags: ['Public comics'],
+  parameters: [{ name: 'limit', in: 'query', schema: { type: 'integer', minimum: 1 } }]
+}));
+addAliases(publicBases, '/user', 'get', 'Search public users', {
+  tags: ['Public comics'],
+  parameters: [
+    { name: 'username', in: 'query', description: 'Username search text', schema: { type: 'string' } },
+    { name: 'sort', in: 'query', description: 'latest, oldest, or username', schema: { type: 'string', enum: ['latest', 'oldest', 'username'] } },
+    { name: 'page', in: 'query', schema: { type: 'integer', minimum: 1 } },
+    { name: 'limit', in: 'query', schema: { type: 'integer', minimum: 1 } }
+  ]
+});
+addAliases(publicBases, '/user/{userId}', 'get', 'Get public comics by user', {
+  tags: ['Public comics'],
+  parameters: [id('userId')]
+});
 addAliases(publicBases, '/{comicId}', 'get', 'Get public comic detail', { tags: ['Public comics'], parameters: [id('comicId')] });
 
 add('/chapter/', 'get', 'List chapters for a comic', { tags: ['Chapters'], parameters: [{ name: 'comicId', in: 'query', required: true, schema: { type: 'integer' } }] });
 add('/chapter/', 'post', 'Create a chapter', { tags: ['Chapters'], secured: true, body: jsonBody({ comicId: { type: 'integer' }, chapterNumber: { type: 'integer' }, title: { type: 'string' }, coinCost: { type: 'integer' }, pages: { type: 'array', items: { type: 'string' } } }, ['comicId', 'title', 'pages']) });
+add('/chapter/unlocked', 'get', 'List my unlocked chapters', { tags: ['Chapters'], secured: true, parameters: [{ name: 'comicId', in: 'query', schema: { type: 'integer', minimum: 1 } }], description: 'Returns chapter metadata for the authenticated user’s unlocks, optionally filtered by comicId. Returns an empty array when none match.' });
 add('/chapter/{chapterId}', 'get', 'Get chapter metadata', { tags: ['Chapters'], parameters: [id('chapterId')] });
 add('/chapter/{chapterId}', 'patch', 'Edit a chapter', { tags: ['Chapters'], secured: true, parameters: [id('chapterId')], body: jsonBody({ title: { type: 'string' }, coinCost: { type: 'integer' } }) });
 add('/chapter/{chapterId}', 'delete', 'Delete a chapter', { tags: ['Chapters'], secured: true, parameters: [id('chapterId')] });

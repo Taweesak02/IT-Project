@@ -6,6 +6,7 @@ const {incrementChapterCount,decreaseChapterCount} = require('../comicManagement
 const {upsertReadHistory} = require('../history/history.service')
 const { notifyFollowersOfNewChapter } = require('../notification/notification.service');
 
+// แสดง ตอน ด้วย ComicId
 const getChaptersByComicId = async(comicId)=>{
     if (!comicId || Number.isNaN(comicId)) {
         throw new AppError('comicId is required', 400);
@@ -31,6 +32,7 @@ const getChaptersByComicId = async(comicId)=>{
     return chapters;
 }
 
+// แสดง ตอน ด้วย chapterId
 const getChapterById = async(chapterId)=>{
     if (!chapterId || Number.isNaN(chapterId)) {
         throw new AppError('chapterId is required', 400);
@@ -57,6 +59,34 @@ const getChapterById = async(chapterId)=>{
     return chapter;
 }
 
+const getUnlockedChapters = async(userId, comicId)=>{
+    if (!Number.isSafeInteger(userId) || userId <= 0) {
+        throw new AppError('Invalid user', 401);
+    }
+    if (comicId !== undefined && (!Number.isSafeInteger(comicId) || comicId <= 0)) {
+        throw new AppError('comicId must be a positive integer', 400);
+    }
+
+    return prisma.chapter.findMany({
+        where: {
+            unlocks: { some: { userId } },
+            ...(comicId !== undefined ? { comicId } : {})
+        },
+        select: {
+            id: true,
+            comicId: true,
+            chapterNumber: true,
+            title: true,
+            coinCost: true,
+            viewCount: true,
+            createdAt: true,
+            updatedAt: true
+        },
+        orderBy: [{ comicId: 'asc' }, { chapterNumber: 'asc' }]
+    });
+};
+
+// ดูเนื้อหาด้านใน รูปภาพต่างๆ จาก ตอนนั้นๆ
 const getChapterContent = async(chapterId,userId,userRole)=>{
     const chapter = await prisma.chapter.findUnique({
         where: { id: chapterId },
@@ -70,44 +100,47 @@ const getChapterContent = async(chapterId,userId,userRole)=>{
     }
  
     const isFree = chapter.coinCost === 0;
- 
-    if (!isFree) {
+    const isOwner = chapter.comic.creatorId === userId || userRole === 'admin';
+
+    if (!isFree && !isOwner) {
         if (!userId) {
             throw new AppError('Please log in to view this chapter', 401);
         }
 
-        const isOwner = chapter.comic.creatorId === userId || userRole === 'admin';
+        
+        
+        const hasUnlocked = await prisma.chapterUnlock.findFirst({
+            where: { chapterId, userId }
+        });
 
-        if (!isOwner) {
-            const hasUnlocked = await prisma.chapterUnlock.findFirst({
-                where: { chapterId, userId }
-            });
-
-            if (!hasUnlocked) {
-                throw new AppError('You have not unlocked this chapter', 403);
-            }
+        if (!hasUnlocked) {
+            throw new AppError('You have not unlocked this chapter', 403);
         }
     }
 
-    await prisma.$transaction(async (tx) => {
-        await tx.chapter.update({
-            where: { id: chapterId },
-            data: { viewCount: { increment: 1 } }
-        });
-        await tx.comic.update({
-            where: { id: chapter.comic.id },
-            data: { viewCount: { increment: 1 } }
-        });
+    // ถ้าเป็นเจ้าของหรือ admin จะไม่เพิ่มยอดวิว และ บันทึกประวัติการดู
+    if (!isOwner) {
+        await prisma.$transaction(async (tx) => {
+            await tx.chapter.update({
+                where: { id: chapterId },
+                data: { viewCount: { increment: 1 } }
+            });
+            await tx.comic.update({
+                where: { id: chapter.comic.id },
+                data: { viewCount: { increment: 1 } }
+            });
 
-        // only track read history for logged-in users — anonymous readers have no userId to attach it to
-        if (userId) {
-            await upsertReadHistory(userId, chapterId, tx);
-        }
-    });
+            // only track read history for logged-in users — anonymous readers have no userId to attach it to
+            if (userId) {
+                await upsertReadHistory(userId, chapterId, tx);
+            }
+        });
+    }
 
     return formatChapterContent(chapter);
 }
 
+// เพิ่ม ตอน ใน comic
 const addChapter = async(userId,userRole,{comicId,chapterNumber,title,coinCost,pages})=>{
     if (!pages || pages.length === 0) {
         throw new AppError('At least one page is required', 400);
@@ -153,6 +186,7 @@ const addChapter = async(userId,userRole,{comicId,chapterNumber,title,coinCost,p
     }
 }
 
+// แก้ไขรายละเอียดของ ตอน (ไม่ใช่รูปภาพ)
 const editChapter = async(chapterId,userId,userRole,{chapterNumber,title,coinCost})=>{
     const chapter = await prisma.chapter.findUnique({
         where: { id: chapterId },
@@ -180,6 +214,7 @@ const editChapter = async(chapterId,userId,userRole,{chapterNumber,title,coinCos
     }
 }
 
+// ลบ ตอน จะลบทั้งตอน และรูปภาพ
 const removeChapter = async(chapterId,userId,userRole)=>{
     const chapter = await prisma.chapter.findUnique({
         where: { id: chapterId },
@@ -209,6 +244,7 @@ const removeChapter = async(chapterId,userId,userRole)=>{
     return { message: 'Chapter deleted successfully' };
 }
 
+//ปลดล็อก ตอน
 const unlockChapter = async(chapterId,userId)=>{
     const chapter = await prisma.chapter.findUnique({ where: { id: chapterId } });
  
@@ -254,6 +290,7 @@ const unlockChapter = async(chapterId,userId)=>{
     });
 }
 
+// แก้ไข รูปภาพในตอน
 const replaceChapterPages = async (chapterId, userId, userRole, pages) => {
     if (!pages || pages.length === 0) {
         throw new AppError('At least one page is required', 400);
@@ -300,6 +337,7 @@ const replaceChapterPages = async (chapterId, userId, userRole, pages) => {
 
 module.exports = {
     getChaptersByComicId,
+    getUnlockedChapters,
     getChapterById,
     getChapterContent,
     addChapter,
