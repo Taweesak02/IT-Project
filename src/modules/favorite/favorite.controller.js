@@ -10,7 +10,7 @@ const getMy = asyncHandler(async(req,res)=>{
     const userId = req.user.sub
 
     const result = await getMyFavorites(userId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 const add = asyncHandler(async(req,res)=>{
@@ -18,7 +18,7 @@ const add = asyncHandler(async(req,res)=>{
     const comicId = Number(req.params.comicId)
 
     const result = await addFavorite(comicId,userId);
-    res.status(201).json({success:true,...result});
+    res.status(201).json({success:true,data:result});
 })
 
 const remove = asyncHandler(async(req,res)=>{
@@ -26,7 +26,7 @@ const remove = asyncHandler(async(req,res)=>{
     const comicId = Number(req.params.comicId)
 
     const result = await removeFavorite(comicId,userId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 module.exports = {

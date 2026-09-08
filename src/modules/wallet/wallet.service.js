@@ -36,7 +36,7 @@ const createWallet = async(userId,tx = prisma)=>{
    
 }
 
-const increaseWallet = async(walletId,amount,tx = prisma)=>{
+const increaseWallet = async(walletId,amount,tx = prisma, transactionData = {})=>{
     await tx.coinWallet.update({
         where:{id:walletId},
         data:{
@@ -45,9 +45,18 @@ const increaseWallet = async(walletId,amount,tx = prisma)=>{
             }
         }
     })
+    
+    return tx.coinTransaction.create({
+        data: {
+            walletId,
+            coinAmount: amount,
+            transactionType: transactionData.transactionType ?? 'PURCHASE',
+            paymentTransactionId: transactionData.paymentTransactionId ?? null
+        }
+    });
 }
 
-const decreaseWallet = async(walletId,amount,tx = prisma)=>{
+const decreaseWallet = async(walletId,amount,tx = prisma, transactionData = {})=>{
     await tx.coinWallet.update({
         where:{id:walletId},
         data:{
@@ -56,6 +65,15 @@ const decreaseWallet = async(walletId,amount,tx = prisma)=>{
             }
         }
     })
+
+    return tx.coinTransaction.create({
+        data: {
+            walletId,
+            coinAmount: amount,
+            transactionType: transactionData.transactionType ?? 'SPEND',
+            paymentTransactionId: transactionData.paymentTransactionId ?? null
+        }
+    });
 }
 
 module.exports = {

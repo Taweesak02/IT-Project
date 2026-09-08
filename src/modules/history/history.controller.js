@@ -8,7 +8,7 @@ const getHistory = asyncHandler(async(req,res)=>{
     const userId = req.user.sub
 
     const result = await getMyHistory(userId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 

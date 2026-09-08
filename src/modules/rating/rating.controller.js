@@ -11,7 +11,7 @@ const getRating = asyncHandler(async(req,res)=>{
     const comicId = Number(req.params.comicId)
 
     const result = await getComicRatings(comicId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 });
 
 const getMy = asyncHandler(async(req,res)=>{
@@ -19,7 +19,7 @@ const getMy = asyncHandler(async(req,res)=>{
     const userId = req.user.sub
 
     const result = await getMyRating(comicId,userId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 const add = asyncHandler(async(req,res)=>{
@@ -28,7 +28,7 @@ const add = asyncHandler(async(req,res)=>{
     const rating = Number(req.body.rating)
 
     const result = await rateComic(comicId,userId,rating);
-    res.status(201).json({success:true,...result});
+    res.status(201).json({success:true,data:result});
 });
 
 const remove = asyncHandler(async(req,res)=>{
@@ -36,7 +36,7 @@ const remove = asyncHandler(async(req,res)=>{
     const userId = req.user.sub
 
     const result = await removeRating(comicId,userId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 

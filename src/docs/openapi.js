@@ -131,13 +131,11 @@ add('/history/', 'get', 'Get reading history', { tags: ['Community'], secured: t
 add('/notification/', 'get', 'Get notifications', { tags: ['Community'], secured: true });
 add('/notification/{notificationId}/read', 'patch', 'Mark notification as read', { tags: ['Community'], secured: true, parameters: [id('notificationId')] });
 
-const adminQuery = ['page', 'limit', 'status'].map((name) => ({ name, in: 'query', schema: { type: 'string' } }));
+const transactionQuery = ['page', 'limit', 'status'].map((name) => ({ name, in: 'query', schema: { type: 'string' } }));
 add('/admin/statistic', 'get', 'Get platform statistics', { tags: ['Admin'], secured: true });
-add('/admin/users', 'get', 'List users', { tags: ['Admin'], secured: true, parameters: adminQuery });
 add('/admin/users/{id}/ban', 'patch', 'Ban a user', { tags: ['Admin'], secured: true, parameters: [id('id')] });
 add('/admin/users/{id}/unban', 'patch', 'Unban a user', { tags: ['Admin'], secured: true, parameters: [id('id')] });
-add('/admin/transactions', 'get', 'List payment transactions', { tags: ['Admin'], secured: true, parameters: adminQuery });
-add('/admin/dashboard', 'get', 'Get admin dashboard', { tags: ['Admin'], secured: true });
+add('/admin/transactions', 'get', 'List payment transactions', { tags: ['Admin'], secured: true, parameters: transactionQuery });
 
 module.exports = {
   openapi: '3.0.3',

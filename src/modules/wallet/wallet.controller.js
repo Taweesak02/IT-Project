@@ -9,14 +9,14 @@ const wallet = asyncHandler(async(req,res)=>{
     const userId = req.user.sub;
 
     const result = await getWallet(userId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 });
 
 const history = asyncHandler(async(req,res)=>{
     const userId = req.user.sub;
 
     const result = await getHistory(userId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 });
 
 

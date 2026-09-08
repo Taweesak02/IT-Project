@@ -31,7 +31,7 @@ const remove = asyncHandler(async (req, res) => {
     const { url } = req.body;
 
     await deleteFileByUrl(url);
-    res.status(200).json({ success: true });
+    res.json({ success: true });
 });
 
 module.exports = {

@@ -1,10 +1,8 @@
 const {
     getAllStatistic,
-    getAllUsers,
     banUser,
     unbanUser,
-    getTransactions,
-    getDashboard
+    getTransactions
 } = require('./admin.service')
 
 const asyncHandler = require('../../utils/asyncHandler');
@@ -13,15 +11,7 @@ const getStatistic = asyncHandler(async(req,res)=>{
     const userRole = req.user.role
 
     const result = await getAllStatistic(userRole);
-    res.status(200).json({success:true,...result});
-})
-
-const getUsers = asyncHandler(async(req,res)=>{
-    const userRole = req.user.role
-    const {page,limit,status} = req.query
-
-    const result = await getAllUsers(userRole,page,limit,status);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 const ban = asyncHandler(async(req,res)=>{
@@ -29,7 +19,7 @@ const ban = asyncHandler(async(req,res)=>{
     const targetUserId = req.params.id
 
     const result = await banUser(userRole,targetUserId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 const unban = asyncHandler(async(req,res)=>{
@@ -37,7 +27,7 @@ const unban = asyncHandler(async(req,res)=>{
     const targetUserId = req.params.id
 
     const result = await unbanUser(userRole,targetUserId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 const transactions = asyncHandler(async(req,res)=>{
@@ -45,20 +35,11 @@ const transactions = asyncHandler(async(req,res)=>{
     const {page,limit,status} = req.query
     
     const result = await getTransactions(userRole,page,limit,status);
-    res.status(200).json({success:true,...result});
-})
-
-const dashboard = asyncHandler(async(req,res)=>{
-    const userRole = req.user.role
-
-    const result = await getDashboard(userRole);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 module.exports = {
     getStatistic,
-    getUsers,
     ban,unban,
-    transactions,
-    dashboard
+    transactions
 }

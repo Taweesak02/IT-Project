@@ -5,6 +5,7 @@ const {formatChapterContent} = require('./chapter.model')
 const {incrementChapterCount,decreaseChapterCount} = require('../comicManagement/comicManagement.service')
 const {upsertReadHistory} = require('../history/history.service')
 const { notifyFollowersOfNewChapter } = require('../notification/notification.service');
+const { decreaseWallet } = require('../wallet/wallet.service');
 
 // แสดง ตอน ด้วย ComicId
 const getChaptersByComicId = async(comicId)=>{
@@ -275,10 +276,7 @@ const unlockChapter = async(chapterId,userId)=>{
             throw new AppError('Not enough coins', 402);
         }
  
-        await tx.coinWallet.update({
-            where: { userId },
-            data: { balance: { decrement: chapter.coinCost } }
-        });
+        await decreaseWallet(wallet.id, chapter.coinCost, tx);
  
         const unlock = await tx.chapterUnlock.create({
             data: {

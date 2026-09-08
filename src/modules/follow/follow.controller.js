@@ -10,7 +10,7 @@ const getMy = asyncHandler(async(req,res)=>{
     const userId = req.user.sub
 
     const result = await getMyFollowed(userId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 const follow = asyncHandler(async(req,res)=>{
@@ -18,7 +18,7 @@ const follow = asyncHandler(async(req,res)=>{
     const userId = req.user.sub
     
     const result = await followComic(comicId,userId);
-    res.status(201).json({success:true,...result});
+    res.status(201).json({success:true,data:result});
 })
 
 const unFollow = asyncHandler(async(req,res)=>{
@@ -26,7 +26,7 @@ const unFollow = asyncHandler(async(req,res)=>{
     const userId = req.user.sub
 
     const result = await unFollowComic(comicId,userId);
-    res.status(200).json({success:true,...result});
+    res.json({success:true,data:result});
 })
 
 module.exports = {
