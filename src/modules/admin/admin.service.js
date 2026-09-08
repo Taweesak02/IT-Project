@@ -23,43 +23,6 @@ const getAllStatistic = async (userRole) => {
     };
 };
 
-const getAllUsers = async (userRole, page, limit, status ) => {
-    isAdmin(userRole);
-
-    const currentPage = Number(page) > 0 ? Number(page) : 1;
-    const pageSize = Number(limit) > 0 ? Number(limit) : 20;
-
-    const where = status ? { status } : {};
-
-    const [users, total] = await prisma.$transaction([
-        prisma.user.findMany({
-            where,
-            skip: (currentPage - 1) * pageSize,
-            take: pageSize,
-            orderBy: { createdAt: 'desc' },
-            select: {
-                id: true,
-                email: true,
-                username: true,
-                status: true,
-                createdAt: true,
-                role: { select: { roleName: true } }
-            }
-        }),
-        prisma.user.count({ where })
-    ]);
-
-    return {
-        users,
-        pagination: {
-            page: currentPage,
-            limit: pageSize,
-            total,
-            totalPages: Math.ceil(total / pageSize)
-        }
-    };
-};
-
 const banUser = async (userRole, targetUserId) => {
     isAdmin(userRole);
 
@@ -163,7 +126,6 @@ const getDashboard = async (userRole) => {
 
 module.exports = {
     getAllStatistic,
-    getAllUsers,
     banUser,
     unbanUser,
     getTransactions,

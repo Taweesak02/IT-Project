@@ -1,6 +1,5 @@
 const {
     getAllStatistic,
-    getAllUsers,
     banUser,
     unbanUser,
     getTransactions,
@@ -13,14 +12,6 @@ const getStatistic = asyncHandler(async(req,res)=>{
     const userRole = req.user.role
 
     const result = await getAllStatistic(userRole);
-    res.status(200).json({success:true,...result});
-})
-
-const getUsers = asyncHandler(async(req,res)=>{
-    const userRole = req.user.role
-    const {page,limit,status} = req.query
-
-    const result = await getAllUsers(userRole,page,limit,status);
     res.status(200).json({success:true,...result});
 })
 
@@ -57,7 +48,6 @@ const dashboard = asyncHandler(async(req,res)=>{
 
 module.exports = {
     getStatistic,
-    getUsers,
     ban,unban,
     transactions,
     dashboard

@@ -264,7 +264,6 @@ Endpoint กลุ่มนี้ต้องใช้ access token ของผ
 |---|---|:---:|---|
 | GET | `/statistic` | 🔒 | ดูสถิติระบบ |
 | GET | `/dashboard` | 🔒 | ดูข้อมูล dashboard |
-| GET | `/users` | 🔒 | ดูรายการผู้ใช้ |
 | PATCH | `/users/:id/ban` | 🔒 | ระงับผู้ใช้ |
 | PATCH | `/users/:id/unban` | 🔒 | ยกเลิกการระงับผู้ใช้ |
 | GET | `/transactions` | 🔒 | ดูรายการธุรกรรม |
