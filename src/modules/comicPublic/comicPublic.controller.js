@@ -54,8 +54,9 @@ const mostFavorite = asyncHandler(async(req,res)=>{
 // ค้นหาผู้ใช้
 const searchUsers = asyncHandler(async(req,res)=>{
     const queryData = req.query;
+    const userRole = req.user?.role ?? null;
     
-    const result = await searchPublicUsers(queryData);
+    const result = await searchPublicUsers(queryData,userRole);
     res.json({success:true,data:result});
 });
 

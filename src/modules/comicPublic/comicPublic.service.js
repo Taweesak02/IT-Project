@@ -121,13 +121,13 @@ const getMostFavoriteComics = async (limit = 10) => {
 };
 
 //ค้นหาชื่อผู้ใช้
-const searchPublicUsers = async ({ username, sort, page, limit }) => {
+const searchPublicUsers = async ({ username, sort, page, limit}, userRole ) => {
     const currentPage = Number(page) > 0 ? Number(page) : 1;
     const pageSize = Number(limit) > 0 ? Number(limit) : 20;
     const searchUsername = String(username ?? '').trim();
 
     const where = {
-        status: 'active',
+        ...(userRole !== 'admin' && { status: 'active' }),
         ...(searchUsername && {
             username: { contains: searchUsername, mode: 'insensitive' }
         })

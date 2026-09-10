@@ -1,4 +1,5 @@
 const express = require('express');
+const optionalAuthenticate = require('../../middlewares/optionalAuth.middleware');
 const {
     getComic,
     mostView,
@@ -13,7 +14,7 @@ const {
 const router = express.Router();
 
 router.get('/',getComic);
-router.get('/user', searchUsers);
+router.get('/user', optionalAuthenticate, searchUsers);
 router.get('/user/:userId', getUserComics);
 router.get('/most-view',mostView);
 router.get('/top-rated', topRated);             

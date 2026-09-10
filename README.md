@@ -157,7 +157,7 @@ Authorization: Bearer <accessToken>
 | GET | `/top-rated` | - | การ์ตูนที่มีคะแนนสูง |
 | GET | `/most-followed` | - | การ์ตูนที่มีผู้ติดตามมาก |
 | GET | `/most-favorite` | - | การ์ตูนที่มีผู้ชื่นชอบมาก |
-| GET | `/user?username=...&sort=latest&page=1&limit=20` | - | ค้นหาผู้ใช้จาก username รองรับ `sort`: `latest`, `oldest`, `username` |
+| GET | `/user?username=...&sort=latest&page=1&limit=20` | ไม่บังคับ | ค้นหาผู้ใช้จาก username รองรับ `sort`: `latest`, `oldest`, `username`; ผู้ใช้ทั่วไปหรือไม่ส่ง token จะเห็นเฉพาะผู้ใช้ที่ active ส่วน admin ที่ส่ง access token จะเห็นผู้ใช้ทั้งหมด รวมถึงผู้ใช้ที่ถูกระงับ |
 | GET | `/user/:userId` | - | ดูการ์ตูนสาธารณะทั้งหมดของผู้ใช้ เรียงจากใหม่ไปเก่า |
 | GET | `/:comicId` | - | รายละเอียดการ์ตูน |
 

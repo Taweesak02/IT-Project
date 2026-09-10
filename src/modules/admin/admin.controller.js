@@ -16,7 +16,7 @@ const getStatistic = asyncHandler(async(req,res)=>{
 
 const ban = asyncHandler(async(req,res)=>{
     const userRole = req.user.role
-    const targetUserId = req.params.id
+    const targetUserId = Number(req.params.id)
 
     const result = await banUser(userRole,targetUserId);
     res.json({success:true,data:result});
@@ -24,7 +24,7 @@ const ban = asyncHandler(async(req,res)=>{
 
 const unban = asyncHandler(async(req,res)=>{
     const userRole = req.user.role
-    const targetUserId = req.params.id
+    const targetUserId = Number(req.params.id)
 
     const result = await unbanUser(userRole,targetUserId);
     res.json({success:true,data:result});

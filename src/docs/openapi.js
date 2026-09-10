@@ -9,9 +9,9 @@ const jsonBody = (properties, required = []) => ({
 const id = (name, description = 'Numeric resource identifier') => ({ name, in: 'path', required: true, description, schema: { type: 'integer', minimum: 1 } });
 const auth = { bearerAuth: [] };
 const response = (description = 'Successful response') => ({ description, content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } });
-const operation = (summary, { secured = false, parameters = [], body, tags = ['General'], method = 'get', description } = {}) => ({
+const operation = (summary, { secured = false, optionalAuth = false, parameters = [], body, tags = ['General'], method = 'get', description } = {}) => ({
   tags, summary, description, operationId: `${method}_${summary.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`,
-  ...(secured ? { security: [auth] } : {}), parameters, ...(body ? { requestBody: body } : {}),
+  ...(secured ? { security: [auth] } : optionalAuth ? { security: [auth, {}] } : {}), parameters, ...(body ? { requestBody: body } : {}),
   responses: { 200: response(), 201: response('Resource created'), 400: { $ref: '#/components/responses/BadRequest' }, 401: { $ref: '#/components/responses/Unauthorized' }, 403: { $ref: '#/components/responses/Forbidden' }, 404: { $ref: '#/components/responses/NotFound' } },
 });
 
@@ -61,6 +61,8 @@ addAliases(publicBases, '/', 'get', 'Search public comics', {
 }));
 addAliases(publicBases, '/user', 'get', 'Search public users', {
   tags: ['Public comics'],
+  optionalAuth: true,
+  description: 'Authentication is optional. Anonymous users and normal users can see active users only. Authenticated administrators can see all users, including banned or inactive users.',
   parameters: [
     { name: 'username', in: 'query', description: 'Username search text', schema: { type: 'string' } },
     { name: 'sort', in: 'query', description: 'latest, oldest, or username', schema: { type: 'string', enum: ['latest', 'oldest', 'username'] } },
