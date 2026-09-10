@@ -139,7 +139,13 @@ const searchPublicUsers = async ({ username, sort, page, limit}, userRole ) => {
             skip: (currentPage - 1) * pageSize,
             take: pageSize,
             orderBy: ALLOWED_USER_SORTS[sort] ?? ALLOWED_USER_SORTS.latest,
-            select: { id: true, username: true, profileImage: true }
+            select: {
+                id: true,
+                username: true,
+                profileImage: true,
+                status: true,
+                role: { select: { roleName: true } }
+            }
         }),
         prisma.user.count({ where })
     ]);
