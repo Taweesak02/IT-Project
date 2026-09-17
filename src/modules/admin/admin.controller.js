@@ -2,7 +2,8 @@ const {
     getAllStatistic,
     banUser,
     unbanUser,
-    getTransactions
+    getTransactions,
+    setComicApproval
 } = require('./admin.service')
 
 const asyncHandler = require('../../utils/asyncHandler');
@@ -38,8 +39,20 @@ const transactions = asyncHandler(async(req,res)=>{
     res.json({success:true,data:result});
 })
 
+const approveComic = asyncHandler(async(req,res)=>{
+    const result = await setComicApproval(req.user.role, Number(req.params.id), 'APPROVED');
+    res.json({success:true,data:result});
+})
+
+const unapproveComic = asyncHandler(async(req,res)=>{
+    const result = await setComicApproval(req.user.role, Number(req.params.id), 'UNAPPROVED');
+    res.json({success:true,data:result});
+})
+
 module.exports = {
     getStatistic,
     ban,unban,
-    transactions
+    transactions,
+    approveComic,
+    unapproveComic
 }

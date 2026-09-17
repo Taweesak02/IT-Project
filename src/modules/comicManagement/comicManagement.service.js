@@ -85,19 +85,38 @@ const removeComic = async(comicId, userId, role)=>{
         throw new AppError('You do not have permission to delete this comic',403);
     }
 
-    await prisma.comic.delete({ where: { id: comicId } });
+    await prisma.comic.update({
+        where: { id: comicId },
+        data: { isActive: false }
+    });
 
-    if (comic.coverImage){
-        await deleteFileByUrl(comic.coverImage);
+    return { message: 'Comic deactivated successfully' };
+}
+
+const resubmitComic = async(comicId, userId, role)=>{
+    const comic = await prisma.comic.findUnique({ where: { id: comicId } });
+
+    if (!comic) {
+        throw new AppError('Comic not found', 404);
     }
-    
-    for (const chapter of comic.chapters) {
-        for (const page of chapter.pages) {
-            await deleteFileByUrl(page.imageUrl);   // adjust field name to match your ChapterImage model
+
+    if (comic.creatorId !== userId && role !== 'admin') {
+        throw new AppError('You do not have permission to resubmit this comic', 403);
+    }
+
+    return prisma.comic.update({
+        where: { id: comicId },
+        data: {
+            approved: 'RESUBMIT',
+            resubmitAt: new Date()
+        },
+        select: {
+            id: true,
+            title: true,
+            approved: true,
+            resubmitAt: true
         }
-    }
-
-    return { message: 'Comic deleted successfully' };
+    });
 }
 
 const getComicById = async(comicId, userId, role)=>{
@@ -188,6 +207,7 @@ module.exports = {
     addComic,
     editComic,
     removeComic,
+    resubmitComic,
     getComicById,
     getComicByCreator,
     getComicStatistic,

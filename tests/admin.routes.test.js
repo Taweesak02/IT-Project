@@ -5,6 +5,8 @@ describe('Admin routes', () => {
     ['get', '/api/admin/statistic'],
     ['patch', '/api/admin/users/1/ban'],
     ['patch', '/api/admin/users/1/unban'],
+    ['patch', '/api/admin/comics/1/approve'],
+    ['patch', '/api/admin/comics/1/unapprove'],
     ['get', '/api/admin/transactions'],
   ])('%s %s requires authentication', expectProtectedEndpoint);
 });

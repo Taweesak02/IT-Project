@@ -4,6 +4,7 @@ const{
     add,
     edit,
     remove,
+    resubmit,
     getMyComics,
     getOne,
     statistic
@@ -17,7 +18,6 @@ router.get('/:id',authenticate,getOne);
 router.post('/',authenticate,add);
 router.patch('/:id',authenticate,edit);
 router.delete('/:id',authenticate,remove);
-
-// router.patch('/:id/reSubmit')
+router.patch('/:id/resubmit', authenticate, resubmit);
 
 module.exports = router;

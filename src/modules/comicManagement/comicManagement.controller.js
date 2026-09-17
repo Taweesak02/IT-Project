@@ -2,6 +2,7 @@ const {
     addComic,
     editComic,
     removeComic,
+    resubmitComic,
     getComicById,
     getComicByCreator,
     getComicStatistic
@@ -24,6 +25,11 @@ const remove = asyncHandler(async(req,res)=>{
     res.json({ success: true, data: result });
 });
 
+const resubmit = asyncHandler(async(req,res)=>{
+    const result = await resubmitComic(Number(req.params.id), req.user.sub, req.user.role);
+    res.json({ success: true, data: result });
+});
+
 const getOne = asyncHandler(async(req,res)=>{
     const result = await getComicById(Number(req.params.id),req.user.sub,req.user.role);
     res.json({ success: true, data: result });
@@ -43,6 +49,7 @@ module.exports = {
     add,
     edit,
     remove,
+    resubmit,
     getMyComics,
     getOne,
     statistic
