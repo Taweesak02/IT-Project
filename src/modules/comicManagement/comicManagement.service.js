@@ -151,6 +151,52 @@ const getComicByCreator = async(creatorId)=>{
     });
 }
 
+const getComicOverview = async(creatorId)=>{
+    const comics = await prisma.comic.findMany({
+        where: { creatorId },
+        select: {
+            chapterCount: true,
+            viewCount: true,
+            ratingCount: true,
+            avgRating: true,
+            _count: {
+                select: {
+                    favorites: true,
+                    follows: true
+                }
+            }
+        }
+    });
+
+    const overview = comics.reduce((overview, comic) => ({
+        totalComics: overview.totalComics + 1,
+        totalChapters: overview.totalChapters + comic.chapterCount,
+        totalViews: overview.totalViews + comic.viewCount,
+        totalRatings: overview.totalRatings + comic.ratingCount,
+        totalFavorites: overview.totalFavorites + comic._count.favorites,
+        totalFollowers: overview.totalFollowers + comic._count.follows,
+        totalRatingScore: overview.totalRatingScore + (comic.avgRating * comic.ratingCount)
+    }), {
+        totalComics: 0,
+        totalChapters: 0,
+        totalViews: 0,
+        totalRatings: 0,
+        totalFavorites: 0,
+        totalFollowers: 0,
+        totalRatingScore: 0
+    });
+
+    return {
+        totalComics: overview.totalComics,
+        totalChapters: overview.totalChapters,
+        totalViews: overview.totalViews,
+        totalRatings: overview.totalRatings,
+        totalFavorites: overview.totalFavorites,
+        totalFollowers: overview.totalFollowers,
+        averageRating: overview.totalRatings === 0 ? 0 : overview.totalRatingScore / overview.totalRatings
+    };
+}
+
 const getComicStatistic = async(comicId, userId, role)=>{
     const comic = await prisma.comic.findUnique({
         where: { id: comicId },
@@ -210,6 +256,7 @@ module.exports = {
     resubmitComic,
     getComicById,
     getComicByCreator,
+    getComicOverview,
     getComicStatistic,
     incrementChapterCount,
     decreaseChapterCount

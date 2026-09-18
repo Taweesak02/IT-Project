@@ -3,6 +3,7 @@ const { expectProtectedEndpoint } = require('./routeTestSetup');
 describe('Content management routes', () => {
   test.each([
     ['get', '/api/comic-manage/'],
+    ['get', '/api/comic-manage/overview'],
     ['get', '/api/comic-manage/1/statistic'],
     ['get', '/api/comic-manage/1'],
     ['post', '/api/comic-manage/'],

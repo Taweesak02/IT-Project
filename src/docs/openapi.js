@@ -44,6 +44,7 @@ add('/auth/update-profile', 'patch', 'Update profile', { tags: authTag, secured:
 
 const contentBases = ['/comic-manage'];
 addAliases(contentBases, '/', 'get', 'List my comics', { secured: true, tags: ['Comic management'] });
+addAliases(contentBases, '/overview', 'get', 'Get my comics statistics overview', { secured: true, tags: ['Comic management'] });
 addAliases(contentBases, '/', 'post', 'Create a comic', { secured: true, tags: ['Comic management'], body: jsonBody({ title: { type: 'string' }, description: { type: 'string' }, coverImage: { type: 'string' }, categoryIds: { type: 'array', items: { type: 'integer' } }, tagIds: { type: 'array', items: { type: 'integer' } } }, ['title']) });
 addAliases(contentBases, '/{id}', 'get', 'Get owned comic', { secured: true, tags: ['Comic management'], parameters: [id('id')] });
 addAliases(contentBases, '/{id}', 'patch', 'Edit a comic', { secured: true, tags: ['Comic management'], parameters: [id('id')], body: jsonBody({ title: { type: 'string' }, description: { type: 'string' }, coverImage: { type: 'string' }, status: { type: 'string' }, categoryIds: { type: 'array', items: { type: 'integer' } }, tagIds: { type: 'array', items: { type: 'integer' } } }) });

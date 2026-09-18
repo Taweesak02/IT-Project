@@ -5,6 +5,7 @@ const {
     resubmitComic,
     getComicById,
     getComicByCreator,
+    getComicOverview,
     getComicStatistic
 } = require('./comicManagement.service')
 
@@ -40,6 +41,11 @@ const getMyComics = asyncHandler(async(req,res)=>{
     res.json({ success: true, data: result });
 });
 
+const overview = asyncHandler(async(req,res)=>{
+    const result = await getComicOverview(req.user.sub);
+    res.json({ success: true, data: result });
+});
+
 const statistic = asyncHandler(async(req,res)=>{
     const result = await getComicStatistic(Number(req.params.id),req.user.sub,req.user.role);
     res.json({ success: true, data: result });
@@ -52,5 +58,6 @@ module.exports = {
     resubmit,
     getMyComics,
     getOne,
+    overview,
     statistic
 };

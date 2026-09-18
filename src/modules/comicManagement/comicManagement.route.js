@@ -7,12 +7,14 @@ const{
     resubmit,
     getMyComics,
     getOne,
+    overview,
     statistic
 } = require('./comicManagement.controller');
 
 const router = express.Router();
 
 router.get('/',authenticate,getMyComics);
+router.get('/overview',authenticate,overview);
 router.get('/:id/statistic',authenticate,statistic);
 router.get('/:id',authenticate,getOne);
 router.post('/',authenticate,add);

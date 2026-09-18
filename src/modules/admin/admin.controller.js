@@ -1,5 +1,6 @@
 const {
     getAllStatistic,
+    searchAdminComics,
     banUser,
     unbanUser,
     getTransactions,
@@ -49,7 +50,13 @@ const unapproveComic = asyncHandler(async(req,res)=>{
     res.json({success:true,data:result});
 })
 
+const searchComics = asyncHandler(async(req,res)=>{
+    const result = await searchAdminComics(req.user.role, req.query);
+    res.json({success:true,data:result});
+});
+
 module.exports = {
+    searchComics,
     getStatistic,
     ban,unban,
     transactions,
