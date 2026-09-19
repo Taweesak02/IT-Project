@@ -1,0 +1,5 @@
+curl -u <token>: \
+  "http://localhost:9000/api/issues/search?componentKeys=juice-shop-demo&ps=200" \
+  -o issues.json
+
+    docker run --rm --memory=8g -e SONAR_HOST_URL="http://host.docker.internal:9000" -e SONAR_TOKEN="sqa_32bfea5fb8789656c90dfb693d795b5bee25f9b6" -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli
