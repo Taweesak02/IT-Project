@@ -24,7 +24,8 @@ const searchComic = async({title,comicname,tags,tag,categorys,category,sort,page
     const categoryIds = [categorys ?? category].flat().filter(Boolean).map(Number);
  
     const where = {
-        approved: true,
+        approved: 'APPROVED',
+        isActive: true,
         ...(searchTitle && {
             title: { contains: searchTitle, mode: 'insensitive' }
         }),
@@ -73,7 +74,7 @@ const searchComic = async({title,comicname,tags,tag,categorys,category,sort,page
 // ข้อมูล Comic ที่มียอดคนดูมากที่สุด
 const getMostViewComics = async (limit = 10) => {
     return prisma.comic.findMany({
-        where: { approved: true },
+        where: { approved: 'APPROVED', isActive: true },
         orderBy: { viewCount: 'desc' },
         take: limit,
         select: {
@@ -85,7 +86,7 @@ const getMostViewComics = async (limit = 10) => {
 // ข้อมูล Comic ที่มีคะแนนสูงสุด
 const getTopRatedComics = async (limit = 10) => {
       return prisma.comic.findMany({
-        where: { approved: true, ratingCount: { gt: 0 } },
+        where: { approved: 'APPROVED', isActive: true, ratingCount: { gt: 0 } },
         orderBy: { avgRating: 'desc' },
         take: limit,
         select: { id: true, title: true, coverImage: true, avgRating: true, ratingCount: true }
@@ -95,7 +96,7 @@ const getTopRatedComics = async (limit = 10) => {
 //ข้อมูล Comic ที่มีผู้ติดตามมากที่สุด
 const getMostFollowedComics = async (limit = 10) => {
     return prisma.comic.findMany({
-        where: { approved: true },
+        where: { approved: 'APPROVED', isActive: true },
         orderBy: { follows: { _count: 'desc' } },
         take: limit,
         select: {
@@ -108,7 +109,7 @@ const getMostFollowedComics = async (limit = 10) => {
 //ข้อมูล Comic ที่มีคนชอบมากที่สุด
 const getMostFavoriteComics = async (limit = 10) => {
     return prisma.comic.findMany({
-        where: { approved: true },
+        where: { approved: 'APPROVED', isActive: true },
         orderBy: { favorites: { _count: 'desc' } },
         take: limit,
         select: {
@@ -168,7 +169,7 @@ const getComicsByUserId = async (userId) => {
         throw new AppError('userId must be a positive integer', 400);
     }
 
-    const where = { creatorId, approved: true };
+    const where = { creatorId, approved: 'APPROVED', isActive: true };
 
     return prisma.comic.findMany({
         where,
@@ -194,7 +195,7 @@ const searchComicDetail = async(comicId)=>{
     }
  
     const comic = await prisma.comic.findFirst({
-        where: { id: comicId, approved: true },
+        where: { id: comicId, approved: 'APPROVED', isActive: true },
         select: {
             id: true,
             title: true,

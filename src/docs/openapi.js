@@ -42,12 +42,14 @@ add('/auth/update-profile', 'patch', 'Update profile', { tags: authTag, secured:
 ['update-email', 'updateemail'].forEach((path) => add(`/auth/${path}`, 'patch', 'Update email', { tags: authTag, secured: true, body: jsonBody({ currentPassword: { type: 'string', format: 'password' }, newEmail: { type: 'string', format: 'email' } }, ['currentPassword', 'newEmail']) }));
 ['delete-account', 'deleteaccount'].forEach((path) => add(`/auth/${path}`, 'delete', 'Delete account', { tags: authTag, secured: true, body: jsonBody({ currentPassword: { type: 'string', format: 'password' } }, ['currentPassword']) }));
 
-const contentBases = ['/comic-manage', '/comicmanage'];
+const contentBases = ['/comic-manage'];
 addAliases(contentBases, '/', 'get', 'List my comics', { secured: true, tags: ['Comic management'] });
+addAliases(contentBases, '/overview', 'get', 'Get my comics statistics overview', { secured: true, tags: ['Comic management'] });
 addAliases(contentBases, '/', 'post', 'Create a comic', { secured: true, tags: ['Comic management'], body: jsonBody({ title: { type: 'string' }, description: { type: 'string' }, coverImage: { type: 'string' }, categoryIds: { type: 'array', items: { type: 'integer' } }, tagIds: { type: 'array', items: { type: 'integer' } } }, ['title']) });
 addAliases(contentBases, '/{id}', 'get', 'Get owned comic', { secured: true, tags: ['Comic management'], parameters: [id('id')] });
 addAliases(contentBases, '/{id}', 'patch', 'Edit a comic', { secured: true, tags: ['Comic management'], parameters: [id('id')], body: jsonBody({ title: { type: 'string' }, description: { type: 'string' }, coverImage: { type: 'string' }, status: { type: 'string' }, categoryIds: { type: 'array', items: { type: 'integer' } }, tagIds: { type: 'array', items: { type: 'integer' } } }) });
-addAliases(contentBases, '/{id}', 'delete', 'Delete a comic', { secured: true, tags: ['Comic management'], parameters: [id('id')] });
+addAliases(contentBases, '/{id}', 'delete', 'Deactivate a comic', { secured: true, tags: ['Comic management'], parameters: [id('id')], description: 'Soft-deactivates the comic by setting isActive to false. The comic and its uploaded files remain stored.' });
+addAliases(contentBases, '/{id}/resubmit', 'patch', 'Resubmit a comic for approval', { secured: true, tags: ['Comic management'], parameters: [id('id')] });
 addAliases(contentBases, '/{id}/statistic', 'get', 'Get comic statistics', { secured: true, tags: ['Comic management'], parameters: [id('id')] });
 
 const publicBases = ['/public'];
@@ -137,6 +139,8 @@ const transactionQuery = ['page', 'limit', 'status'].map((name) => ({ name, in: 
 add('/admin/statistic', 'get', 'Get platform statistics', { tags: ['Admin'], secured: true });
 add('/admin/users/{id}/ban', 'patch', 'Ban a user', { tags: ['Admin'], secured: true, parameters: [id('id')] });
 add('/admin/users/{id}/unban', 'patch', 'Unban a user', { tags: ['Admin'], secured: true, parameters: [id('id')] });
+add('/admin/comics/{id}/approve', 'patch', 'Approve a comic', { tags: ['Admin'], secured: true, parameters: [id('id')] });
+add('/admin/comics/{id}/unapprove', 'patch', 'Unapprove a comic', { tags: ['Admin'], secured: true, parameters: [id('id')] });
 add('/admin/transactions', 'get', 'List payment transactions', { tags: ['Admin'], secured: true, parameters: transactionQuery });
 
 module.exports = {

@@ -2,8 +2,10 @@ const {
     addComic,
     editComic,
     removeComic,
+    resubmitComic,
     getComicById,
     getComicByCreator,
+    getComicOverview,
     getComicStatistic
 } = require('./comicManagement.service')
 
@@ -24,6 +26,11 @@ const remove = asyncHandler(async(req,res)=>{
     res.json({ success: true, data: result });
 });
 
+const resubmit = asyncHandler(async(req,res)=>{
+    const result = await resubmitComic(Number(req.params.id), req.user.sub, req.user.role);
+    res.json({ success: true, data: result });
+});
+
 const getOne = asyncHandler(async(req,res)=>{
     const result = await getComicById(Number(req.params.id),req.user.sub,req.user.role);
     res.json({ success: true, data: result });
@@ -31,6 +38,11 @@ const getOne = asyncHandler(async(req,res)=>{
 
 const getMyComics = asyncHandler(async(req,res)=>{
     const result = await getComicByCreator(req.user.sub);
+    res.json({ success: true, data: result });
+});
+
+const overview = asyncHandler(async(req,res)=>{
+    const result = await getComicOverview(req.user.sub);
     res.json({ success: true, data: result });
 });
 
@@ -43,7 +55,9 @@ module.exports = {
     add,
     edit,
     remove,
+    resubmit,
     getMyComics,
     getOne,
+    overview,
     statistic
 };

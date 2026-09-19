@@ -54,7 +54,9 @@ model Comic {
   avgRating     Float  @default(0)
   ratingCount   Int    @default(0)
   status        ComicStatus    @default(ONGOING)
-  approved      Boolean   @default(true)
+  isActive      Boolean   @default(true)
+  approved      ApprovalStatus @default(APPROVED)
+  resubmitAt    DateTime?
   publishedAt   DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -336,4 +338,10 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
+}
+
+enum ApprovalStatus {
+  APPROVED
+  UNAPPROVED
+  RESUBMIT
 }

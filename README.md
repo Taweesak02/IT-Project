@@ -166,19 +166,20 @@ Authorization: Bearer <accessToken>
 | Method | Path | Auth | รายละเอียด |
 |---|---|:---:|---|
 | GET | `/` | 🔒 | รายการการ์ตูนของผู้ใช้ |
+| GET | `/overview` | 🔒 | ดูภาพรวมสถิติการ์ตูนของผู้ใช้ |
 | GET | `/:id` | 🔒 | ดูการ์ตูนของผู้ใช้ |
 | GET | `/:id/statistic` | 🔒 | ดูสถิติการ์ตูน |
 | POST | `/` | 🔒 | สร้างการ์ตูน |
 | PATCH | `/:id` | 🔒 | แก้ไขการ์ตูน |
-| DELETE | `/:id` | 🔒 | ลบการ์ตูน |
-
-รองรับ alias เดิม `/api/comicmanage` ด้วย
+| PATCH | `/:id/resubmit` | 🔒 | ส่งการ์ตูนกลับไปให้ผู้ดูแลพิจารณาใหม่ |
+| DELETE | `/:id` | 🔒 | ปิดใช้งานการ์ตูนแบบ soft delete โดยยังเก็บข้อมูลและไฟล์ไว้ในฐานข้อมูล |
 
 ### 📄 Chapter `/chapter`
 
 | Method | Path | Auth | รายละเอียด |
 |---|---|:---:|---|
 | GET | `/` | - | รายการ chapter |
+| GET | `/unlocked` | 🔒 | รายการ chapter ที่ผู้ใช้ปลดล็อกแล้ว |
 | GET | `/:chapterId` | - | รายละเอียด chapter |
 | GET | `/:chapterId/content` | บางกรณี | อ่านเนื้อหา chapter; ระบบตรวจ token เมื่อมีการส่งมา |
 | POST | `/` | 🔒 | สร้าง chapter |
@@ -263,8 +264,11 @@ Endpoint กลุ่มนี้ต้องใช้ access token ของผ
 | Method | Path | Auth | รายละเอียด |
 |---|---|:---:|---|
 | GET | `/statistic` | 🔒 | ดูสถิติระบบ |
+| GET | `/comics` | 🔒 | ค้นหาและดูรายการการ์ตูนสำหรับผู้ดูแลระบบ |
 | PATCH | `/users/:id/ban` | 🔒 | ระงับผู้ใช้ |
 | PATCH | `/users/:id/unban` | 🔒 | ยกเลิกการระงับผู้ใช้ |
+| PATCH | `/comics/:id/approve` | 🔒 | อนุมัติการ์ตูนให้แสดงต่อสาธารณะ |
+| PATCH | `/comics/:id/unapprove` | 🔒 | ยกเลิกการอนุมัติการ์ตูน |
 | GET | `/transactions` | 🔒 | ดูรายการธุรกรรม |
 
 ## 🧪 ตัวอย่างการเรียก API
@@ -289,7 +293,7 @@ curl http://localhost:3000/api/auth/me \
 อ่านรายละเอียดการ์ตูนและปลดล็อก chapter:
 
 ```bash
-curl http://localhost:3000/api/comic-public/1
+curl http://localhost:3000/api/public/1
 
 curl -X POST http://localhost:3000/api/chapter/10/unlock \
   -H "Authorization: Bearer <accessToken>"

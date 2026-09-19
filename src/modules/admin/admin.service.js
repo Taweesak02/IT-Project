@@ -7,7 +7,7 @@ const getAllStatistic = async (userRole) => {
 
     // const [userCount, comicCount, chapterCount, totalRevenue] = await prisma.$transaction([
     //     prisma.user.count({ where: { status: 'active' } }),
-    //     prisma.comic.count({ where: { approved: true } }),
+    //     prisma.comic.count({ where: { approved: 'APPROVED' } }),
     //     prisma.chapter.count(),
     //     prisma.paymentTransaction.aggregate({
     //         where: { paymentStatus: 'COMPLETED' },
@@ -48,7 +48,7 @@ const getAllStatistic = async (userRole) => {
         prisma.user.count({ where: { status: 'active' } }),
         prisma.user.count({ where: { status: 'banned' } }),
         prisma.user.count({ where: { createdAt: { gte: startOfToday } } }),
-        prisma.comic.count({ where: { approved: true } }),
+        prisma.comic.count({ where: { approved: 'APPROVED' } }),
         prisma.chapter.count(),
         prisma.comicRating.count(),
         prisma.comment.count(),
@@ -133,12 +133,11 @@ const unbanUser = async (userRole, targetUserId) => {
     });
 };
 
-const getTransactions = async (userRole, page, limit, status ) => {
+const getTransactions = async (userRole, page, limit, status) => {
     isAdmin(userRole);
 
     const currentPage = Number(page) > 0 ? Number(page) : 1;
     const pageSize = Number(limit) > 0 ? Number(limit) : 20;
-
     const where = status ? { paymentStatus: status } : {};
 
     const [transactions, total] = await prisma.$transaction([
@@ -167,9 +166,70 @@ const getTransactions = async (userRole, page, limit, status ) => {
     };
 };
 
+const setComicApproval = async (userRole, comicId, approved) => {
+    isAdmin(userRole);
+
+    const comic = await prisma.comic.findUnique({ where: { id: comicId } });
+
+    if (!comic) {
+        throw new AppError('Comic not found', 404);
+    }
+
+    return prisma.comic.update({
+        where: { id: comicId },
+        data: {
+            approved,
+            resubmitAt: null
+        },
+        select: {
+            id: true,
+            title: true,
+            approved: true,
+            resubmitAt: true,
+            isActive: true
+        }
+    });
+};
+
+const searchAdminComics = async (userRole, { title, approved, page = 1, limit = 20 } = {}) => {
+    isAdmin(userRole);
+
+    const currentPage = Number(page);
+    const pageSize = Number(limit);
+    if (!Number.isSafeInteger(currentPage) || currentPage < 1 ||
+        !Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > 100 ||
+        !Number.isSafeInteger((currentPage - 1) * pageSize)) {
+        throw new AppError('Invalid pagination: page must be positive and limit must be between 1 and 100', 400);
+    }
+    if (title !== undefined && typeof title !== 'string') {
+        throw new AppError('title must be a string', 400);
+    }
+    if (approved !== undefined && !['APPROVED', 'UNAPPROVED', 'RESUBMIT'].includes(approved)) {
+        throw new AppError('Invalid approval status', 400);
+    }
+    const keyword = (title ?? '').trim();
+    const where = { ...(keyword && { title: { contains: keyword, mode: 'insensitive' } }), ...(approved && { approved }) };
+    const [comics, total] = await prisma.$transaction([
+        prisma.comic.findMany({
+            where,
+            orderBy: [{ title: 'asc' }, { id: 'asc' }],
+            skip: (currentPage - 1) * pageSize,
+            take: pageSize,
+            select: { id: true, title: true, approved: true, isActive: true }
+        }),
+        prisma.comic.count({ where })
+    ]);
+    return {
+        comics,
+        pagination: { page: currentPage, limit: pageSize, total, totalPages: Math.ceil(total / pageSize) }
+    };
+};
+
 module.exports = {
+    searchAdminComics,
     getAllStatistic,
     banUser,
     unbanUser,
-    getTransactions
-}
+    getTransactions,
+    setComicApproval
+};

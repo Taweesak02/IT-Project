@@ -85,19 +85,38 @@ const removeComic = async(comicId, userId, role)=>{
         throw new AppError('You do not have permission to delete this comic',403);
     }
 
-    await prisma.comic.delete({ where: { id: comicId } });
+    await prisma.comic.update({
+        where: { id: comicId },
+        data: { isActive: false }
+    });
 
-    if (comic.coverImage){
-        await deleteFileByUrl(comic.coverImage);
+    return { message: 'Comic deactivated successfully' };
+}
+
+const resubmitComic = async(comicId, userId, role)=>{
+    const comic = await prisma.comic.findUnique({ where: { id: comicId } });
+
+    if (!comic) {
+        throw new AppError('Comic not found', 404);
     }
-    
-    for (const chapter of comic.chapters) {
-        for (const page of chapter.pages) {
-            await deleteFileByUrl(page.imageUrl);   // adjust field name to match your ChapterImage model
+
+    if (comic.creatorId !== userId && role !== 'admin') {
+        throw new AppError('You do not have permission to resubmit this comic', 403);
+    }
+
+    return prisma.comic.update({
+        where: { id: comicId },
+        data: {
+            approved: 'RESUBMIT',
+            resubmitAt: new Date()
+        },
+        select: {
+            id: true,
+            title: true,
+            approved: true,
+            resubmitAt: true
         }
-    }
-
-    return { message: 'Comic deleted successfully' };
+    });
 }
 
 const getComicById = async(comicId, userId, role)=>{
@@ -130,6 +149,52 @@ const getComicByCreator = async(creatorId)=>{
         },
         orderBy: { createdAt: 'desc' }
     });
+}
+
+const getComicOverview = async(creatorId)=>{
+    const comics = await prisma.comic.findMany({
+        where: { creatorId },
+        select: {
+            chapterCount: true,
+            viewCount: true,
+            ratingCount: true,
+            avgRating: true,
+            _count: {
+                select: {
+                    favorites: true,
+                    follows: true
+                }
+            }
+        }
+    });
+
+    const overview = comics.reduce((overview, comic) => ({
+        totalComics: overview.totalComics + 1,
+        totalChapters: overview.totalChapters + comic.chapterCount,
+        totalViews: overview.totalViews + comic.viewCount,
+        totalRatings: overview.totalRatings + comic.ratingCount,
+        totalFavorites: overview.totalFavorites + comic._count.favorites,
+        totalFollowers: overview.totalFollowers + comic._count.follows,
+        totalRatingScore: overview.totalRatingScore + (comic.avgRating * comic.ratingCount)
+    }), {
+        totalComics: 0,
+        totalChapters: 0,
+        totalViews: 0,
+        totalRatings: 0,
+        totalFavorites: 0,
+        totalFollowers: 0,
+        totalRatingScore: 0
+    });
+
+    return {
+        totalComics: overview.totalComics,
+        totalChapters: overview.totalChapters,
+        totalViews: overview.totalViews,
+        totalRatings: overview.totalRatings,
+        totalFavorites: overview.totalFavorites,
+        totalFollowers: overview.totalFollowers,
+        averageRating: overview.totalRatings === 0 ? 0 : overview.totalRatingScore / overview.totalRatings
+    };
 }
 
 const getComicStatistic = async(comicId, userId, role)=>{
@@ -188,8 +253,10 @@ module.exports = {
     addComic,
     editComic,
     removeComic,
+    resubmitComic,
     getComicById,
     getComicByCreator,
+    getComicOverview,
     getComicStatistic,
     incrementChapterCount,
     decreaseChapterCount
