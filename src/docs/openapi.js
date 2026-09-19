@@ -137,6 +137,7 @@ add('/notification/{notificationId}/read', 'patch', 'Mark notification as read',
 
 const transactionQuery = ['page', 'limit', 'status'].map((name) => ({ name, in: 'query', schema: { type: 'string' } }));
 add('/admin/statistic', 'get', 'Get platform statistics', { tags: ['Admin'], secured: true });
+add('/admin/comics', 'get', 'List comics for administration', { tags: ['Admin'], secured: true });
 add('/admin/users/{id}/ban', 'patch', 'Ban a user', { tags: ['Admin'], secured: true, parameters: [id('id')] });
 add('/admin/users/{id}/unban', 'patch', 'Unban a user', { tags: ['Admin'], secured: true, parameters: [id('id')] });
 add('/admin/comics/{id}/approve', 'patch', 'Approve a comic', { tags: ['Admin'], secured: true, parameters: [id('id')] });
