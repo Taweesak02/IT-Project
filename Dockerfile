@@ -12,7 +12,6 @@ RUN npm ci
 COPY prisma ./prisma
 COPY prisma.config.ts tsconfig.json index.js ./
 COPY src ./src
-COPY public ./public
 
 RUN npx prisma generate
 
