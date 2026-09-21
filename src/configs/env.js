@@ -9,7 +9,4 @@ module.exports = {
   verificationTokenExpiresInMinutes: Number(process.env.EMAIL_VERIFICATION_TOKEN_EXPIRES_IN_MINUTES || 1440),
   passwordResetTokenExpiresInMinutes: Number(process.env.PASSWORD_RESET_TOKEN_EXPIRES_IN_MINUTES || 30),
   nodeEnv: process.env.NODE_ENV || 'development',
-  corsOrigins: process.env.CORS_ORIGINS
-    ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
-    : [],
 };
