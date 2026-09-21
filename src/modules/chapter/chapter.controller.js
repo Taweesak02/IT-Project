@@ -35,7 +35,8 @@ const getUnlocked = asyncHandler(async(req,res)=>{
 
 const getContent = asyncHandler(async(req,res)=>{
     const chapterId = Number(req.params.chapterId);
-    const userId = Number(req.user?.sub) ?? null;
+    const rawUserId = req.user?.sub;
+    const userId = rawUserId === undefined || rawUserId === null ? null : Number(rawUserId);
     const userRole = req.user?.role ?? null;
  
     const result = await getChapterContent(chapterId, userId, userRole);

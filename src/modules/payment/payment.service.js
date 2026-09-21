@@ -43,8 +43,10 @@ const purchasePackage = async(userId,{packageId,paymentMethodId})=>{
             payment: completedPayment,
             coinTransaction
         }
-        
-    })
+
+    });
+
+    return purchase;
 
 }
 

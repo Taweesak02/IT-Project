@@ -7,11 +7,12 @@ const swaggerUi = require('swagger-ui-express');
 const routes = require('./routes');
 const openapi = require('../docs/openapi');
 const errorHandler = require('../middlewares/errorHandler'); // adjust path
+const { corsOrigins } = require('../configs/env');
 
 const app = express();
 
 app.use(helmet());
-app.use(cors());
+app.use(cors({ origin: corsOrigins.length > 0 ? corsOrigins : false }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '../../public/uploads')));
 
