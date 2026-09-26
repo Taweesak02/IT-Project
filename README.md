@@ -241,13 +241,14 @@ Authorization: Bearer <accessToken>
 | GET | `/wallet` | 🔒 | ดูยอด coin ในกระเป๋า |
 | GET | `/wallet/history` | 🔒 | ดูประวัติ coin |
 | POST | `/payment/purchase` | 🔒 | ซื้อ coin |
+| POST | `/payment/:transactionId/verify-slip` | 🔒 | อัปโหลดสลิปเพื่อยืนยันธุรกรรมที่อยู่ระหว่างรอดำเนินการ และเติม coin ให้ผู้ซื้อ |
 | GET | `/payment/status/:paymentTransactionId` | 🔒 | ตรวจสอบสถานะการชำระเงิน |
 | GET | `/payment/history` | 🔒 | ดูประวัติการชำระเงิน |
-| GET | `/payment-method`, `/paymentmethod` | - | ดูวิธีชำระเงิน |
+| GET | `/payment-method`, `/paymentmethod` | - | ดูวิธีชำระเงินที่เปิดใช้งาน |
 | GET | `/payment-method/:paymentMethodId` | - | ดูวิธีชำระเงินรายการเดียว |
-| POST | `/payment-method` | 🔒 | เพิ่มวิธีชำระเงิน |
-| PATCH | `/payment-method/:paymentMethodId` | 🔒 | แก้ไขวิธีชำระเงิน |
-| DELETE | `/payment-method/:paymentMethodId` | 🔒 | ลบวิธีชำระเงิน |
+| POST | `/payment-method` | 🔒 | เพิ่มวิธีชำระเงิน โดย admin; รองรับ `name`, `code` และ `promptPayId` |
+| PATCH | `/payment-method/:paymentMethodId` | 🔒 | แก้ไขวิธีชำระเงิน โดย admin; รองรับ `name`, `code`, `isActive` และ `promptPayId` |
+| DELETE | `/payment-method/:paymentMethodId` | 🔒 | ปิดใช้งานวิธีชำระเงิน โดย admin |
 
 ### 🔔 ประวัติและการแจ้งเตือน
 
@@ -306,6 +307,16 @@ curl -X POST http://localhost:3000/api/upload/cover \
   -H "Authorization: Bearer <accessToken>" \
   -F "image=@./cover.jpg"
 ```
+
+อัปโหลดสลิปเพื่อยืนยันการซื้อ coin:
+
+```bash
+curl -X POST http://localhost:3000/api/payment/10/verify-slip \
+  -H "Authorization: Bearer <accessToken>" \
+  -F "slip=@./payment-slip.jpg"
+```
+
+สำหรับการซื้อด้วย PromptPay วิธีชำระเงินต้องมี `promptPayId` ที่ใช้งานได้ โดย `POST /api/payment/purchase` จะคืน `paymentTransactionId`, QR image และยอดชำระเงิน
 
 ## 🔧 คำสั่งที่ใช้บ่อย
 

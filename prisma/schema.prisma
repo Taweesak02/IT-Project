@@ -183,6 +183,7 @@ model PaymentMethod {
   name        String    @unique   // e.g. "Credit Card", "PromptPay"
   code        String    @unique   // e.g. "stripe", "promptpay" — used in actual gateway calls
   isActive    Boolean   @default(true)
+  promptPayId   String?
   createdAt   DateTime  @default(now())
 
   transactions PaymentTransaction[]
@@ -195,6 +196,8 @@ model PaymentTransaction{
   coinPackageId   Int?
   paymentMethodId   Int
   paymentStatus   PaymentStatus @default(PENDING)
+  slipImageUrl   String?   // uploaded slip, once submitted
+  verifiedAt     DateTime?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 

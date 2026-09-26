@@ -107,13 +107,20 @@ add('/package/{packageId}', 'delete', 'Deactivate coin package', { tags: ['Payme
 add('/wallet/', 'get', 'Get my wallet', { tags: ['Wallet'], secured: true });
 add('/wallet/history', 'get', 'Get wallet transactions', { tags: ['Wallet'], secured: true });
 add('/payment/purchase', 'post', 'Purchase a coin package', { tags: ['Payments'], secured: true, body: jsonBody({ packageId: { type: 'integer' }, paymentMethodId: { type: 'integer' } }, ['packageId', 'paymentMethodId']) });
+add('/payment/{transactionId}/verify-slip', 'post', 'Verify payment slip', {
+  tags: ['Payments'],
+  secured: true,
+  parameters: [id('transactionId', 'Payment transaction identifier')],
+  description: 'Upload a payment slip image for a pending transaction. The current implementation marks a valid upload as completed and credits the purchased coins.',
+  body: { content: { 'multipart/form-data': { schema: { type: 'object', required: ['slip'], properties: { slip: { type: 'string', format: 'binary' } } } } } }
+});
 add('/payment/status/{paymentTransactionId}', 'get', 'Get payment status', { tags: ['Payments'], secured: true, parameters: [id('paymentTransactionId')] });
 add('/payment/history', 'get', 'Get my payment history', { tags: ['Payments'], secured: true });
 ['paymentmethod', 'payment-method'].forEach((base) => {
   add(`/${base}/`, 'get', 'List payment methods', { tags: ['Payments'] });
-  add(`/${base}/`, 'post', 'Create payment method', { tags: ['Payments'], secured: true, body: jsonBody({ name: { type: 'string' }, code: { type: 'string' } }, ['name', 'code']) });
+  add(`/${base}/`, 'post', 'Create payment method', { tags: ['Payments'], secured: true, body: jsonBody({ name: { type: 'string' }, code: { type: 'string' }, promptPayId: { type: 'string', description: 'PromptPay account identifier, when applicable' } }, ['name', 'code']) });
   add(`/${base}/{paymentMethodId}`, 'get', 'Get payment method', { tags: ['Payments'], parameters: [id('paymentMethodId')] });
-  add(`/${base}/{paymentMethodId}`, 'patch', 'Update payment method', { tags: ['Payments'], secured: true, parameters: [id('paymentMethodId')], body: jsonBody({ name: { type: 'string' }, code: { type: 'string' }, isActive: { type: 'boolean' } }) });
+  add(`/${base}/{paymentMethodId}`, 'patch', 'Update payment method', { tags: ['Payments'], secured: true, parameters: [id('paymentMethodId')], body: jsonBody({ name: { type: 'string' }, code: { type: 'string' }, isActive: { type: 'boolean' }, promptPayId: { type: 'string', description: 'PromptPay account identifier, when applicable' } }) });
   add(`/${base}/{paymentMethodId}`, 'delete', 'Deactivate payment method', { tags: ['Payments'], secured: true, parameters: [id('paymentMethodId')] });
 });
 
