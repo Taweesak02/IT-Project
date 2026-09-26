@@ -2,7 +2,8 @@ const {
   purchasePackage,
   getPaymentStatus,
   getPaymentHistory,
-  verifySlip
+  verifySlip,
+  cancelPayment
 } = require('./payment.service')
 
 const asyncHandler = require('../../utils/asyncHandler');
@@ -39,9 +40,17 @@ const verifySlipController = asyncHandler(async (req, res) => {
     res.json({ success: true, data: result });
 });
 
+const cancel = asyncHandler(async (req, res) => {
+    const transactionId = Number(req.params.transactionId);
+    const userId = Number(req.user.sub);
+    const result = await cancelPayment(transactionId, userId);
+    res.status(200).json({ success: true, data: result });
+});
+
 module.exports = {
     purchase,
     status,
     history,
-    verifySlipController
+    verifySlipController,
+    cancel
 }

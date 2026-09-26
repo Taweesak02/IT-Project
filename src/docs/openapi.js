@@ -116,6 +116,12 @@ add('/payment/{transactionId}/verify-slip', 'post', 'Verify payment slip', {
 });
 add('/payment/status/{paymentTransactionId}', 'get', 'Get payment status', { tags: ['Payments'], secured: true, parameters: [id('paymentTransactionId')] });
 add('/payment/history', 'get', 'Get my payment history', { tags: ['Payments'], secured: true });
+add('/payment/{transactionId}/cancel', 'patch', 'Cancel a pending payment', {
+  tags: ['Payments'],
+  secured: true,
+  parameters: [id('transactionId', 'Payment transaction identifier')],
+  description: 'Cancels a payment belonging to the authenticated user. Only transactions with PENDING status can be cancelled; the status is changed to FAILED.'
+});
 ['paymentmethod', 'payment-method'].forEach((base) => {
   add(`/${base}/`, 'get', 'List payment methods', { tags: ['Payments'] });
   add(`/${base}/`, 'post', 'Create payment method', { tags: ['Payments'], secured: true, body: jsonBody({ name: { type: 'string' }, code: { type: 'string' }, promptPayId: { type: 'string', description: 'PromptPay account identifier, when applicable' } }, ['name', 'code']) });

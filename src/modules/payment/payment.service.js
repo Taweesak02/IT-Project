@@ -32,8 +32,7 @@ const purchasePackage = async(userId,{packageId,paymentMethodId})=>{
         }
     });
 
-    const amountInBaht = coinPackage.price / 100;
-    const payload = generatePayload(method.promptPayId, { amount: amountInBaht });
+    const payload = generatePayload(method.promptPayId, { amount: coinPackage.price });
     const qrImage = await QRCode.toDataURL(payload);
 
     return {
@@ -126,9 +125,31 @@ const verifySlip = async (transactionId, userId, file) => {
     });
 };
 
+const cancelPayment = async (transactionId, userId) => {
+    const transaction = await prisma.paymentTransaction.findUnique({ where: { id: transactionId } });
+
+    if (!transaction) {
+        throw new AppError('Transaction not found', 404);
+    }
+
+    if (transaction.userId !== userId) {
+        throw new AppError('Not your transaction', 403);
+    }
+
+    if (transaction.paymentStatus !== 'PENDING') {
+        throw new AppError('Only pending transactions can be cancelled', 400);
+    }
+
+    return prisma.paymentTransaction.update({
+        where: { id: transactionId },
+        data: { paymentStatus: 'FAILED' }
+    });
+};
+
 module.exports = {
     purchasePackage,
     getPaymentHistory,
     getPaymentStatus,
-    verifySlip
+    verifySlip,
+    cancelPayment
 }

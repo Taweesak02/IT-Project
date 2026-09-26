@@ -244,6 +244,7 @@ Authorization: Bearer <accessToken>
 | POST | `/payment/:transactionId/verify-slip` | 🔒 | อัปโหลดสลิปเพื่อยืนยันธุรกรรมที่อยู่ระหว่างรอดำเนินการ และเติม coin ให้ผู้ซื้อ |
 | GET | `/payment/status/:paymentTransactionId` | 🔒 | ตรวจสอบสถานะการชำระเงิน |
 | GET | `/payment/history` | 🔒 | ดูประวัติการชำระเงิน |
+| PATCH | `/payment/:transactionId/cancel` | 🔒 | ยกเลิกธุรกรรมที่มีสถานะรอดำเนินการ โดยเปลี่ยนสถานะเป็น `FAILED` |
 | GET | `/payment-method`, `/paymentmethod` | - | ดูวิธีชำระเงินที่เปิดใช้งาน |
 | GET | `/payment-method/:paymentMethodId` | - | ดูวิธีชำระเงินรายการเดียว |
 | POST | `/payment-method` | 🔒 | เพิ่มวิธีชำระเงิน โดย admin; รองรับ `name`, `code` และ `promptPayId` |
