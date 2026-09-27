@@ -1,7 +1,8 @@
 // middlewares/upload.middleware.js
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const path = require('node:path');
+const fs = require('node:fs');
+const { randomUUID } = require('node:crypto');
 
 const uploadDir = path.join(__dirname, '../../public/uploads');
 
@@ -14,7 +15,7 @@ const storage = multer.diskStorage({
         cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
-        const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname)}`;
+        const uniqueName = `${Date.now()}-${randomUUID()}${path.extname(file.originalname)}`;
         cb(null, uniqueName);
     }
 });

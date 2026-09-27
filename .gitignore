@@ -45,7 +45,6 @@ Thumbs.db
 prisma/migrations/dev.db
 
 # Database dumps / backups
-*.sql
 *.dump
 
 # Cache

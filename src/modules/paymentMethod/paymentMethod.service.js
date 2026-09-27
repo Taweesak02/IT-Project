@@ -26,7 +26,7 @@ const getOnePayment = async (paymentMethodId) => {
     return paymentMethod;
 };
 
-const addPayment = async(userRole,{name,code})=>{
+const addPayment = async(userRole,{name,code,promptPayId})=>{
     isAdmin(userRole)
 
     if (!name || !code) {
@@ -35,7 +35,7 @@ const addPayment = async(userRole,{name,code})=>{
 
     try {
         return await prisma.paymentMethod.create({
-            data: { name, code }
+            data: { name, code ,promptPayId}
         });
     } catch (err) {
         if (err.code === 'P2002') {
@@ -45,7 +45,7 @@ const addPayment = async(userRole,{name,code})=>{
     }
 }
 
-const editPayment = async(userRole,paymentMethodId,{name,code,isActive})=>{
+const editPayment = async(userRole,paymentMethodId,{name,code,isActive,promptPayId})=>{
     isAdmin(userRole)
 
     const paymentMethod = await prisma.paymentMethod.findUnique({
@@ -59,7 +59,7 @@ const editPayment = async(userRole,paymentMethodId,{name,code,isActive})=>{
     try {
         return await prisma.paymentMethod.update({
             where: { id: paymentMethodId },
-            data: { name, code, isActive }
+            data: { name, code, isActive,promptPayId }
         });
     } catch (err) {
         if (err.code === 'P2002') {
