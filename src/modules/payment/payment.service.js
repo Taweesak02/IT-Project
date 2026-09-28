@@ -92,7 +92,7 @@ const verifySlip = async (transactionId, userId, file) => {
 
     const slipUrl = `/uploads/${file.filename}`; 
 
-    // TODO: call SlipOK/EasySlip here, confirm isValid
+// Option: call SlipOK/EasySlip here, confirm isValid
 //     const verifyResponse = await axios.post(
 //     process.env.SLIP_VERIFICATION_API_URL,
 //     { /* their expected payload — file data, usually */ },
