@@ -43,9 +43,18 @@ copy .env.example .env
 ```bash
 npm run prisma:generate
 npm run prisma:migrate
+npm run prisma:seed
 npm run dev
 ```
 
+ก่อนรัน `npm run prisma:seed` ให้ตั้งค่าในไฟล์ `.env` ที่ root ของโปรเจกต์:
+
+```env
+SEED_ADMIN_EMAIL=your-email@example.com
+SEED_ADMIN_PASSWORD=your-admin-password
+```
+
+ค่าจาก `SEED_ADMIN_EMAIL` จะถูกใช้เป็นอีเมลของบัญชี admin ที่สร้างในฐานข้อมูล
 เซิร์ฟเวอร์จะทำงานที่ `http://localhost:3000`
 
 ### 🧭 Swagger API Documentation
@@ -78,6 +87,7 @@ Docker Compose จะเริ่ม PostgreSQL, deploy migration และเ�
 | `JWT_REFRESH_TOKEN_EXPIRES_IN_MINUTES` | ไม่ | `10080` | อายุ refresh token เป็นนาที |
 | `EMAIL_VERIFICATION_TOKEN_EXPIRES_IN_MINUTES` | ไม่ | `1440` | อายุ token ยืนยันอีเมล |
 | `PASSWORD_RESET_TOKEN_EXPIRES_IN_MINUTES` | ไม่ | `30` | อายุ token ตั้งรหัสผ่านใหม่ |
+| `SEED_ADMIN_EMAIL` | ใช้ตอน seed | - | อีเมลของ admin เริ่มต้น |
 | `SEED_ADMIN_PASSWORD` | ใช้ตอน seed | - | รหัสผ่าน admin เริ่มต้น |
 | `NODE_ENV` | ไม่ | `development` | ใช้ `production` เมื่อ deploy |
 
