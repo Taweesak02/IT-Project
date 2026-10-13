@@ -5,7 +5,6 @@ const {
   logoutUser,
   logoutFromAllDevices,
   getCurrentUser,
-  requestPasswordReset,
   resetPassword,
   changePassword,
   updateProfile,
@@ -74,13 +73,6 @@ const resendVerification = asyncHandler(async (req, res) => {
   res.json({ success: true, data:result });
 });
 
-const forgotPassword = asyncHandler(async (req, res) => {
-  const email = req.body?.email;
-
-  const result = await requestPasswordReset(email);
-  res.json({ success: true, data:result });
-});
-
 const resetPasswordController = asyncHandler(async (req, res) => {
   const token = req.body?.token;
   const newPassword = req.body?.newPassword;
@@ -132,7 +124,6 @@ module.exports = {
   me,
   verifyEmail,
   resendVerification,
-  forgotPassword,
   resetPasswordController,
   changePasswordController,
   updateProfileController,
