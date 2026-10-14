@@ -7,9 +7,13 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
 const prisma = new PrismaClient({ adapter })
 
 async function main() {
+  const adminEmail = process.env.SEED_ADMIN_EMAIL?.trim()
   const adminPassword = process.env.SEED_ADMIN_PASSWORD
-  if (!adminPassword) {
-    throw new Error('SEED_ADMIN_PASSWORD is not set in .env')
+
+  if (!adminEmail || !adminPassword) {
+    throw new Error(
+      'SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD must be set in the root .env file',
+    )
   }
   const hashedPassword = await bcrypt.hash(adminPassword, 10)
 
@@ -26,11 +30,11 @@ async function main() {
   })
 
   await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
+    where: { email: adminEmail },
     update: {},
     create: {
       username: 'Admin',
-      email: 'admin@example.com',
+      email: adminEmail,
       password: hashedPassword,
       roleId: adminRole.id,
     },

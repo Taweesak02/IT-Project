@@ -152,6 +152,14 @@ const getComicByCreator = async(creatorId)=>{
 }
 
 const getComicOverview = async(creatorId)=>{
+    const startOfWeek = new Date();
+    startOfWeek.setDate(startOfWeek.getDate() - 7);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
     const comics = await prisma.comic.findMany({
         where: { creatorId },
         select: {
@@ -186,6 +194,87 @@ const getComicOverview = async(creatorId)=>{
         totalRatingScore: 0
     });
 
+    const [
+        approvedComics,
+        unapprovedComics,
+        resubmitComics,
+        inactiveComics,
+        ongoingComics,
+        completedComics,
+        hiatusComics,
+        cancelledComics,
+        newChaptersThisWeek,
+        viewsThisWeek,
+        viewsThisMonth,
+        newFollowersThisWeek,
+        newFavoritesThisWeek,
+        topComicsByViews
+    ] = await prisma.$transaction([
+        prisma.comic.count({ where: { creatorId, approved: 'APPROVED' } }),
+        prisma.comic.count({ where: { creatorId, approved: 'UNAPPROVED' } }),
+        prisma.comic.count({ where: { creatorId, approved: 'RESUBMIT' } }),
+        prisma.comic.count({ where: { creatorId, isActive: false } }),
+        prisma.comic.count({ where: { creatorId, status: 'ONGOING' } }),
+        prisma.comic.count({ where: { creatorId, status: 'COMPLETED' } }),
+        prisma.comic.count({ where: { creatorId, status: 'HIATUS' } }),
+        prisma.comic.count({ where: { creatorId, status: 'CANCELLED' } }),
+        prisma.chapter.count({
+            where: {
+                comic: { creatorId },
+                createdAt: { gte: startOfWeek }
+            }
+        }),
+        prisma.viewStatistic.aggregate({
+            where: {
+                chapter: { comic: { creatorId } },
+                viewDate: { gte: startOfWeek }
+            },
+            _sum: { viewsCount: true }
+        }),
+        prisma.viewStatistic.aggregate({
+            where: {
+                chapter: { comic: { creatorId } },
+                viewDate: { gte: startOfMonth }
+            },
+            _sum: { viewsCount: true }
+        }),
+        prisma.followComic.count({
+            where: {
+                comic: { creatorId },
+                createdAt: { gte: startOfWeek }
+            }
+        }),
+        prisma.favoriteComic.count({
+            where: {
+                comic: { creatorId },
+                createdAt: { gte: startOfWeek }
+            }
+        }),
+        prisma.comic.findMany({
+            where: { creatorId },
+            orderBy: [{ viewCount: 'desc' }, { id: 'asc' }],
+            take: 5,
+            select: {
+                id: true,
+                title: true,
+                coverImage: true,
+                viewCount: true,
+                ratingCount: true,
+                avgRating: true,
+                approved: true,
+                status: true,
+                isActive: true,
+                chapterCount: true,
+                _count: {
+                    select: {
+                        favorites: true,
+                        follows: true
+                    }
+                }
+            }
+        })
+    ]);
+
     return {
         totalComics: overview.totalComics,
         totalChapters: overview.totalChapters,
@@ -193,7 +282,27 @@ const getComicOverview = async(creatorId)=>{
         totalRatings: overview.totalRatings,
         totalFavorites: overview.totalFavorites,
         totalFollowers: overview.totalFollowers,
-        averageRating: overview.totalRatings === 0 ? 0 : overview.totalRatingScore / overview.totalRatings
+        averageRating: overview.totalRatings === 0 ? 0 : overview.totalRatingScore / overview.totalRatings,
+        approval: {
+            approved: approvedComics,
+            unapproved: unapprovedComics,
+            resubmit: resubmitComics,
+            inactive: inactiveComics
+        },
+        status: {
+            ongoing: ongoingComics,
+            completed: completedComics,
+            hiatus: hiatusComics,
+            cancelled: cancelledComics
+        },
+        period: {
+            newChaptersThisWeek,
+            viewsThisWeek: viewsThisWeek._sum.viewsCount ?? 0,
+            viewsThisMonth: viewsThisMonth._sum.viewsCount ?? 0,
+            newFollowersThisWeek,
+            newFavoritesThisWeek
+        },
+        topComicsByViews
     };
 }
 

@@ -227,28 +227,6 @@ const logoutFromAllDevices = async (userId) => {
   return { message: 'Logged out from all devices successfully' };
 };
 
-const requestPasswordReset = async (email) => {
-  if (!email) {
-    throw new AppError('Email is required', 400);
-  }
-
-  const normalizedEmail = String(email).trim().toLowerCase();
-  const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
-
-  if (!user) {
-    return { message: 'If an account exists, a password reset email was sent.' };
-  }
-
-  const resetToken = await createPasswordResetToken(user.id);
-  const response = { message: 'Password reset token generated successfully.' };
-
-  if (nodeEnv !== 'production') {
-    response.resetToken = resetToken;
-  }
-
-  return response;
-};
-
 const resetPassword = async (token, newPassword) => {
   if (!token || !newPassword) {
     throw new AppError('Reset token and new password are required', 400);
@@ -545,7 +523,6 @@ module.exports = {
   logoutUser,
   logoutFromAllDevices,
   getCurrentUser,
-  requestPasswordReset,
   resetPassword,
   changePassword,
   updateProfile,

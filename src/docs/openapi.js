@@ -35,7 +35,6 @@ add('/auth/me', 'get', 'Get current user', { tags: authTag, secured: true });
 add('/auth/verify-email', 'get', 'Verify email with query parameters', { tags: authTag, parameters: [{ name: 'token', in: 'query', required: true, schema: { type: 'string' } }] });
 add('/auth/verify-email', 'post', 'Verify email', { tags: authTag, body: jsonBody({ token: { type: 'string' } }, ['token']) });
 add('/auth/resend-verification', 'post', 'Resend verification email', { tags: authTag, body: jsonBody({ email: { type: 'string', format: 'email' } }, ['email']) });
-['forgot-password', 'forget-password'].forEach((path) => add(`/auth/${path}`, 'post', 'Request password reset', { tags: authTag, body: jsonBody({ email: { type: 'string', format: 'email' } }, ['email']) }));
 add('/auth/reset-password', 'post', 'Reset password', { tags: authTag, body: jsonBody({ token: { type: 'string' }, newPassword: { type: 'string', format: 'password' } }, ['token', 'newPassword']) });
 add('/auth/change-password', 'patch', 'Change password', { tags: authTag, secured: true, body: jsonBody({ currentPassword: { type: 'string', format: 'password' }, newPassword: { type: 'string', format: 'password' } }, ['currentPassword', 'newPassword']) });
 add('/auth/update-profile', 'patch', 'Update profile', { tags: authTag, secured: true, body: jsonBody({ username: { type: 'string' }, profileImage: { type: 'string' } }) });

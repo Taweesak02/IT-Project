@@ -38,14 +38,87 @@ npm install
 copy .env.example .env
 ```
 
-แก้ค่าใน `.env` ให้ตรงกับฐานข้อมูล จากนั้นสร้าง Prisma Client และรัน migration:
+แก้ค่าใน `.env` ให้ตรงกับฐานข้อมูลตามหัวข้อ
+**การเชื่อมต่อฐานข้อมูล PostgreSQL** ด้านล่าง ก่อนสร้าง Prisma Client และรัน migration
+
+### 🗄️ การเชื่อมต่อฐานข้อมูล PostgreSQL
+
+โปรเจกต์ใช้ PostgreSQL ผ่าน Prisma และอ่าน connection string จากตัวแปร
+`DATABASE_URL` ในไฟล์ `.env` โดยสามารถเริ่มฐานข้อมูลได้ 2 วิธี:
+
+#### วิธีที่ 1: เชื่อมต่อ PostgreSQL ที่ติดตั้งในเครื่อง
+
+สร้าง database และ user ใน PostgreSQL ก่อน แล้วกำหนดค่าใน `.env`:
+
+```env
+POSTGRES_DB=webproject
+POSTGRES_USER=webproject
+POSTGRES_PASSWORD=your-database-password
+DB_HOST_PORT=5432
+
+DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${DB_HOST_PORT}/${POSTGRES_DB}?schema=public
+```
+
+หาก PostgreSQL ใช้ port อื่น ให้เปลี่ยน `DB_HOST_PORT` ให้ตรงกับ port ที่เปิดใช้งาน
+และตรวจสอบว่า database ใน `POSTGRES_DB` ถูกสร้างไว้แล้ว จากนั้นรันคำสั่ง:
 
 ```bash
 npm run prisma:generate
 npm run prisma:migrate
+npm run prisma:seed
 npm run dev
 ```
 
+#### วิธีที่ 2: ใช้ PostgreSQL ผ่าน Docker Compose
+
+Docker Compose จะสร้าง PostgreSQL container จากค่าใน `.env` และ map port
+จากเครื่องไปยัง port `5432` ภายใน container:
+
+```env
+POSTGRES_DB=webproject
+POSTGRES_USER=webproject
+POSTGRES_PASSWORD=your-database-password
+DB_HOST_PORT=5432
+```
+
+เริ่มทั้ง database และ API ด้วยคำสั่ง:
+
+```bash
+docker compose up --build
+```
+
+ภายใน container ของ API ระบบจะใช้ connection string รูปแบบ
+`postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public`
+โดย `db` คือชื่อ service ของ PostgreSQL ใน `docker-compose.yml` ไม่ใช่ `localhost`
+และระบบจะ deploy migration กับ seed ให้อัตโนมัติก่อนเริ่ม API
+
+ตรวจสอบสถานะ container และ database ได้ด้วยคำสั่ง:
+
+```bash
+docker compose ps
+docker compose logs db
+```
+
+หากต้องการหยุด service แต่เก็บข้อมูลใน PostgreSQL volume ไว้:
+
+```bash
+docker compose down
+```
+
+หากต้องการลบข้อมูลฐานข้อมูลทั้งหมดด้วย ให้ใช้คำสั่งนี้เฉพาะเมื่อยืนยันแล้วว่าไม่ต้องการข้อมูลเดิม:
+
+```bash
+docker compose down -v
+```
+
+ก่อนรัน `npm run prisma:seed` ให้ตั้งค่าในไฟล์ `.env` ที่ root ของโปรเจกต์:
+
+```env
+SEED_ADMIN_EMAIL=your-email@example.com
+SEED_ADMIN_PASSWORD=your-admin-password
+```
+
+ค่าจาก `SEED_ADMIN_EMAIL` จะถูกใช้เป็นอีเมลของบัญชี admin ที่สร้างในฐานข้อมูล
 เซิร์ฟเวอร์จะทำงานที่ `http://localhost:3000`
 
 ### 🧭 Swagger API Documentation
@@ -78,6 +151,7 @@ Docker Compose จะเริ่ม PostgreSQL, deploy migration และเ�
 | `JWT_REFRESH_TOKEN_EXPIRES_IN_MINUTES` | ไม่ | `10080` | อายุ refresh token เป็นนาที |
 | `EMAIL_VERIFICATION_TOKEN_EXPIRES_IN_MINUTES` | ไม่ | `1440` | อายุ token ยืนยันอีเมล |
 | `PASSWORD_RESET_TOKEN_EXPIRES_IN_MINUTES` | ไม่ | `30` | อายุ token ตั้งรหัสผ่านใหม่ |
+| `SEED_ADMIN_EMAIL` | ใช้ตอน seed | - | อีเมลของ admin เริ่มต้น |
 | `SEED_ADMIN_PASSWORD` | ใช้ตอน seed | - | รหัสผ่าน admin เริ่มต้น |
 | `NODE_ENV` | ไม่ | `development` | ใช้ `production` เมื่อ deploy |
 
@@ -141,7 +215,6 @@ Authorization: Bearer <accessToken>
 | GET | `/me` | 🔒 | ดูข้อมูลผู้ใช้ปัจจุบัน |
 | GET, POST | `/verify-email` | - | ยืนยันอีเมลด้วย token |
 | POST | `/resend-verification` | - | ส่งอีเมลยืนยันใหม่ โดยส่ง `email` |
-| POST | `/forgot-password`, `/forget-password` | - | ขอ token สำหรับลืมรหัสผ่าน |
 | POST | `/reset-password` | - | ตั้งรหัสผ่านใหม่ด้วย `token`, `newPassword` |
 | PATCH | `/change-password` | 🔒 | เปลี่ยนรหัสผ่าน |
 | PATCH | `/update-profile` | 🔒 | แก้ไขข้อมูล profile |

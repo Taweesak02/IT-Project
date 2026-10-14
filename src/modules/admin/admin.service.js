@@ -4,35 +4,34 @@ const { isAdmin } = require('../../utils/checkUtil');
 
 const getAllStatistic = async (userRole) => {
     isAdmin(userRole);
-
-    // const [userCount, comicCount, chapterCount, totalRevenue] = await prisma.$transaction([
-    //     prisma.user.count({ where: { status: 'active' } }),
-    //     prisma.comic.count({ where: { approved: 'APPROVED' } }),
-    //     prisma.chapter.count(),
-    //     prisma.paymentTransaction.aggregate({
-    //         where: { paymentStatus: 'COMPLETED' },
-    //         _sum: { amount: true }
-    //     })
-    // ]);
-
-    // return {
-    //     userCount,
-    //     comicCount,
-    //     chapterCount,
-    //     totalRevenue: totalRevenue._sum.amount ?? 0
-    // };
+    
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
 
     const startOfWeek = new Date();
     startOfWeek.setDate(startOfWeek.getDate() - 7);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
 
     const [
         totalUsers,
         activeUsers,
         bannedUsers,
         newUsersToday,
+        newUsersThisWeek,
+        newUsersThisMonth,
+        allComics,
         totalComics,
+        unapprovedComics,
+        resubmitComics,
+        inactiveComics,
+        ongoingComics,
+        completedComics,
+        hiatusComics,
+        cancelledComics,
         totalChapters,
         totalRatings,
         totalComments,
@@ -41,14 +40,31 @@ const getAllStatistic = async (userRole) => {
         revenueStats,
         pendingPayments,
         failedPayments,
+        refundedPayments,
         coinsSpent,
-        viewSum
+        viewSum,
+        viewsToday,
+        viewsThisWeek,
+        revenueToday,
+        revenueThisMonth,
+        refundedRevenue,
+        topComicsByViews
     ] = await prisma.$transaction([
         prisma.user.count(),
         prisma.user.count({ where: { status: 'active' } }),
         prisma.user.count({ where: { status: 'banned' } }),
         prisma.user.count({ where: { createdAt: { gte: startOfToday } } }),
+        prisma.user.count({ where: { createdAt: { gte: startOfWeek } } }),
+        prisma.user.count({ where: { createdAt: { gte: startOfMonth } } }),
+        prisma.comic.count(),
         prisma.comic.count({ where: { approved: 'APPROVED' } }),
+        prisma.comic.count({ where: { approved: 'UNAPPROVED' } }),
+        prisma.comic.count({ where: { approved: 'RESUBMIT' } }),
+        prisma.comic.count({ where: { isActive: false } }),
+        prisma.comic.count({ where: { status: 'ONGOING' } }),
+        prisma.comic.count({ where: { status: 'COMPLETED' } }),
+        prisma.comic.count({ where: { status: 'HIATUS' } }),
+        prisma.comic.count({ where: { status: 'CANCELLED' } }),
         prisma.chapter.count(),
         prisma.comicRating.count(),
         prisma.comment.count(),
@@ -61,11 +77,49 @@ const getAllStatistic = async (userRole) => {
         }),
         prisma.paymentTransaction.count({ where: { paymentStatus: 'PENDING' } }),
         prisma.paymentTransaction.count({ where: { paymentStatus: 'FAILED' } }),
+        prisma.paymentTransaction.count({ where: { paymentStatus: 'REFUNDED' } }),
         prisma.coinTransaction.aggregate({
             where: { transactionType: 'SPEND' },
             _sum: { coinAmount: true }
         }),
-        prisma.comic.aggregate({ _sum: { viewCount: true } })
+        prisma.comic.aggregate({ _sum: { viewCount: true } }),
+        prisma.viewStatistic.aggregate({
+            where: { viewDate: { gte: startOfToday } },
+            _sum: { viewsCount: true }
+        }),
+        prisma.viewStatistic.aggregate({
+            where: { viewDate: { gte: startOfWeek } },
+            _sum: { viewsCount: true }
+        }),
+        prisma.paymentTransaction.aggregate({
+            where: {
+                paymentStatus: 'COMPLETED',
+                createdAt: { gte: startOfToday }
+            },
+            _sum: { amount: true }
+        }),
+        prisma.paymentTransaction.aggregate({
+            where: {
+                paymentStatus: 'COMPLETED',
+                createdAt: { gte: startOfMonth }
+            },
+            _sum: { amount: true }
+        }),
+        prisma.paymentTransaction.aggregate({
+            where: { paymentStatus: 'REFUNDED' },
+            _sum: { amount: true }
+        }),
+        prisma.comic.findMany({
+            orderBy: [{ viewCount: 'desc' }, { id: 'asc' }],
+            take: 5,
+            select: {
+                id: true,
+                title: true,
+                viewCount: true,
+                approved: true,
+                isActive: true
+            }
+        })
     ]);
 
     return {
@@ -73,24 +127,44 @@ const getAllStatistic = async (userRole) => {
             total: totalUsers,
             active: activeUsers,
             banned: bannedUsers,
-            newToday: newUsersToday
+            newToday: newUsersToday,
+            newThisWeek: newUsersThisWeek,
+            newThisMonth: newUsersThisMonth
         },
         content: {
+            totalAll: allComics,
             totalComics,
+            approved: totalComics,
+            unapproved: unapprovedComics,
+            resubmit: resubmitComics,
+            inactive: inactiveComics,
+            byStatus: {
+                ongoing: ongoingComics,
+                completed: completedComics,
+                hiatus: hiatusComics,
+                cancelled: cancelledComics
+            },
             totalChapters
         },
         engagement: {
             totalViews: viewSum._sum.viewCount ?? 0,
+            viewsToday: viewsToday._sum.viewsCount ?? 0,
+            viewsThisWeek: viewsThisWeek._sum.viewsCount ?? 0,
             totalRatings,
             totalComments,
             totalFavorites,
-            totalFollows
+            totalFollows,
+            topComicsByViews
         },
         commerce: {
             totalRevenue: revenueStats._sum.amount ?? 0,
             totalCompletedPayments: revenueStats._count,
             pendingPayments,
             failedPayments,
+            refundedPayments,
+            revenueToday: revenueToday._sum.amount ?? 0,
+            revenueThisMonth: revenueThisMonth._sum.amount ?? 0,
+            refundedRevenue: refundedRevenue._sum.amount ?? 0,
             totalCoinsSpent: coinsSpent._sum.coinAmount ?? 0
         }
     };

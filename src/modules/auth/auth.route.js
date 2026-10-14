@@ -9,7 +9,6 @@ const {
 	me,
 	verifyEmail,
 	resendVerification,
-	forgotPassword,
 	resetPasswordController,
 	changePasswordController,
 	updateProfileController,
@@ -28,8 +27,6 @@ router.get('/me', authenticate, me);
 router.get('/verify-email', verifyEmail);
 router.post('/verify-email', verifyEmail);
 router.post('/resend-verification', resendVerification);
-router.post('/forgot-password', forgotPassword);
-router.post('/forget-password', forgotPassword);
 router.post('/reset-password', resetPasswordController);
 router.patch('/change-password', authenticate, changePasswordController);
 router.patch('/update-profile', authenticate, updateProfileController);
