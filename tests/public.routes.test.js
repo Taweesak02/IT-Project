@@ -1,4 +1,5 @@
 const { app, expectPublicEndpoint } = require('./routeTestSetup');
+const prisma = require('../src/configs/db');
 
 describe('Public routes', () => {
   test('GET /api/health returns the API health payload', async () => {
@@ -6,6 +7,15 @@ describe('Public routes', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ ok: true, message: 'API is running' });
+  });
+
+  test('GET /api/health returns 503 when the database is unavailable', async () => {
+    prisma.$queryRaw.mockRejectedValueOnce(new Error('database unavailable'));
+
+    const response = await require('supertest')(app).get('/api/health');
+
+    expect(response.status).toBe(503);
+    expect(response.body).toEqual({ ok: false, message: 'Database unavailable' });
   });
 
   test.each([

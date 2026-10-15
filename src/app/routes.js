@@ -1,4 +1,5 @@
 const express = require('express');
+const prisma = require('../configs/db');
 const authRoutes = require('../modules/auth/auth.route');
 const comicsRoutes = require('../modules/comicManagement/comicManagement.route');
 const chapterRoutes = require('../modules/chapter/chapter.route')
@@ -20,8 +21,14 @@ const admin = require('../modules/admin/admin.route')
 
 const router = express.Router();
 
-router.get('/health', (_req, res) => {
-  res.json({ ok: true, message: 'API is running' });
+router.get('/health', async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ ok: true, message: 'API is running' });
+  } catch (error) {
+    console.error('Health check database query failed:', error);
+    res.status(503).json({ ok: false, message: 'Database unavailable' });
+  }
 });
 
 router.use('/auth', authRoutes);

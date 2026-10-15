@@ -1,5 +1,9 @@
 const request = require('supertest');
 
+jest.mock('../src/configs/db', () => ({
+  $queryRaw: jest.fn().mockResolvedValue([{ '?column?': 1 }]),
+}));
+
 function mockEndpointHandler(_req, res) {
   res.status(204).end();
 }
